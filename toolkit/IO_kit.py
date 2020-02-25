@@ -1,10 +1,13 @@
+from collections import defaultdict
 from glob import glob
-from os.path import expanduser, abspath, exists, join,basename
+from os.path import expanduser, abspath, exists, join, basename
 
 from ete3 import Tree
-from collections import defaultdict
+
 
 def process_path(path):
+    if path is None:
+        return None
     if not '/' in path:
         path = './' + path
     if path.startswith('~'):
@@ -20,8 +23,8 @@ def read_tree(nwk_file):
 
 
 def get_files_from_dir(file,
-                        indir,
-                        how='from file'):
+                       indir=None,
+                       how='from file'):
     indir = process_path(indir)
     if not exists(indir):
         raise IOError(f"indir {indir} doesn't exists")
@@ -38,7 +41,7 @@ def get_files_from_dir(file,
         f = glob(join(indir, f'{name}*'))
         if len(f) == 1:
             file_path = process_path(f[0])
-            files_list.append((name,file_path))
+            files_list.append((name, file_path))
         elif len(f) > 1:
             print(f"Warning! Duplicated files for id {name}. ")
             pass
@@ -47,13 +50,13 @@ def get_files_from_dir(file,
     return files_list
 
 
-def get_link_info(indir,name2seq):
+def get_link_info(indir, name2seq):
     link_dict = defaultdict(lambda: defaultdict(dict))
     linkfea_dict = defaultdict(dict)
     count = 1
-    for blastout in glob(join(indir, '*.blastout')):
+    for blastout in glob(join(indir, '*.aliout')):
         g1, g2 = basename(blastout).split('_to_')
-        g2 = g2.replace('.blastout','')
+        g2 = g2.replace('.aliout', '')
         for row in open(blastout):
             rows = row.split('\t')
             qid, sid, iden, qstart, qend, sstart, send = [rows[_]
@@ -61,11 +64,11 @@ def get_link_info(indir,name2seq):
             fea1 = 'linkfeature' + '{:0>8}'.format(len(linkfea_dict) + 1)
             linkfea_dict[fea1]["end"] = int(qend)
             linkfea_dict[fea1]["start"] = int(qstart)
-            linkfea_dict[fea1]["karyo"] = name2seq[g1+'_'+qid]
+            linkfea_dict[fea1]["karyo"] = name2seq[g1 + '_' + qid]
             fea2 = 'linkfeature' + '{:0>8}'.format(len(linkfea_dict) + 1)
             linkfea_dict[fea2]["end"] = int(send)
             linkfea_dict[fea2]["start"] = int(sstart)
-            linkfea_dict[fea2]["karyo"] = name2seq[g2+'_'+sid]
+            linkfea_dict[fea2]["karyo"] = name2seq[g2 + '_' + sid]
 
             _dict = {'link' + '{:0>8}'.format(count):
                          {'identity': float(iden),
@@ -75,4 +78,4 @@ def get_link_info(indir,name2seq):
             link_dict[g1][g2].update(_dict)
             link_dict[g2][g1].update(_dict)
             count += 1
-    return link_dict,linkfea_dict
+    return link_dict, linkfea_dict

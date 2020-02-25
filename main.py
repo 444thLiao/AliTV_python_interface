@@ -18,7 +18,6 @@ def main(genome_list=None,
          enable_stepwise=True,
          force=True,
          alignment_ways='blastn',
-         how='stepwise',
          parallel=0,
          ):
     # prepare IO
@@ -26,7 +25,10 @@ def main(genome_list=None,
 
     # get a list of (name,file_path)
     if genome_list is None and tree_file is None and enable_stepwise:
-        print('Warning, no designated order is give but enable stepwise alignment. ')
+        print('Warning, no designated order is given but enable stepwise alignment. ')
+        order_files = get_files_from_dir(genome_list,
+                                         indir=indir,
+                                         how='from file')
     elif genome_list is not None:
         order_files = get_files_from_dir(genome_list,
                                          indir=indir,
@@ -43,12 +45,13 @@ def main(genome_list=None,
     alignment_batch(files,
                     names=names,
                     odir=ali_odir,
-                    alignment_ways=,
+                    alignment_ways=alignment_ways,
                     how='stepwise' if enable_stepwise else None,
                     force=force,
                     parallel=parallel)
     blast_info = 'a'
     # run alignment
+
 
 @click.command()
 def cli():
