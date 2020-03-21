@@ -183,7 +183,7 @@ def split_gbk(genome_files, odir,
             continue
         g2info = genome2gene_info
         # get target genes
-        target_genes = target_gene_dict.get(genome_name,None)
+        target_genes = target_gene_dict.get(genome_name, None)
         if target_genes is None:
             tqdm.write(f"{genome_name} doesn't have target_gene, please check it")
             continue
@@ -211,9 +211,9 @@ def split_gbk(genome_files, odir,
             expand_len = num_p[0]
             # filter out some contig extend too long
             contigs_list = []
-            for _contig,pos_list in contig2pos_remained.items():
-                min_pos = min(pos_list,key=lambda x:x[0])[0]
-                max_pos = max(pos_list,key=lambda x:x[1])[1]
+            for _contig, pos_list in contig2pos_remained.items():
+                min_pos = min(pos_list, key=lambda x: x[0])[0]
+                max_pos = max(pos_list, key=lambda x: x[1])[1]
 
                 if (max_pos - min_pos) >= 2 * expand_len:
                     contig2pos_remained.pop(_contig)
@@ -240,8 +240,8 @@ def split_gbk(genome_files, odir,
             expand_CDS = num_p[0]
             contigs_list = []
             for contig, info in contig2pos_remained.items():
-                left_most_cds = min(info,key=lambda x:x[0])[-1]
-                right_most_cds = max(info,key=lambda x:x[0])[-1]
+                left_most_cds = min(info, key=lambda x: x[0])[-1]
+                right_most_cds = max(info, key=lambda x: x[0])[-1]
 
                 order_fea = contig2order_fea[contig]
                 left_most_idx = order_fea.index(left_most_cds)
@@ -275,15 +275,13 @@ def split_gbk(genome_files, odir,
 
 def parse_nump(num_p):
     if num_p.endswith('bp'):
-        return (int(num_p.replace('bp', '')),
+        return (int(float(num_p.replace('bp', ''))),
                 'bp')
     elif num_p.endswith('p'):
         return (int(num_p.strip('p')),
                 'CDS')
     else:
         raise Exception('unknown num_p parameters,must end with bp or p.')
-
-
 
 
 @click.command()
@@ -308,7 +306,6 @@ def cli(infile, indir, odir, suffix, fuzzy_match, num_p, force):
               num_p=num_p,
               force=force,
               fuzzy_match=fuzzy_match)
-
 
 
 if __name__ == '__main__':
