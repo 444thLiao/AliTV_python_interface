@@ -120,6 +120,7 @@ main(tree_file="/home-user/thliao/data/plancto/test/hzs_gene.infile",
 @click.option("-p", "parallel", default=0)
 @click.option("-only_align", "only_align", is_flag=True, default=False)
 @click.option("-s", "suffix", default='fna')
+@click.option("-f", "force", is_flag=True, default=False)
 def cli(genome_list, tree_file, indir, odir, annotation_table, enable_stepwise, force, alignment_ways, parallel, only_align, suffix):
     main(genome_list=genome_list,
          tree_file=tree_file,
@@ -130,9 +131,12 @@ def cli(genome_list, tree_file, indir, odir, annotation_table, enable_stepwise, 
          alignment_ways=alignment_ways,
          parallel=parallel,
          only_align=only_align,
+         force=force,
          suffix=suffix)
     pass
 
 
 if __name__ == '__main__':
     cli()
+
+# python3 ~/software/AliTV_python_interface/main.py -tf ./over20p_bac120.formatted.newick -indir ./split_gbk/fna_dir -odir ./ali_odir/ -at ./annotation.tab

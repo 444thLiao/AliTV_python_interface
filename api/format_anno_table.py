@@ -31,7 +31,7 @@ def parsed_infile(infile):
             locus2gene[locus] = gene
             gbk_name = basename(gbk_file).rpartition('.')[0]
             locus2genome[locus] = gbk_name
-            gbk2gbk_obj[gbk_name] = get_all_CDS_from_gbk(gbk_file)
+            gbk2gbk_obj[gbk_name] = get_all_CDS_from_gbk(gbk_file)[0]
 
     return locus2gene, locus2genome, gbk2gbk_obj
 
@@ -41,7 +41,9 @@ def main(locus2gene, locus2genome, gbk2gbk_obj,
     rows = []
     for locus, gene in locus2gene.items():
         genome = locus2genome[locus]
-        gbk_obj = gbk2gbk_obj[genome]
+        gbk_obj = gbk2gbk_obj[genome].get(locus)
+        if gbk_obj is None:
+            continue
         contig_name = gbk_obj['contig_name']
         start = str(int(gbk_obj['start']))
         end = str(int(gbk_obj['end']))
