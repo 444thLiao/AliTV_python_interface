@@ -230,7 +230,7 @@ def deep_scan(tree):
         child = tree.children
         for c in child:
             return_v.append({"children":deep_scan(c)})
-        return return_v
+        return {"children":return_v}
 
 def nwk2json(treefile,odir,subset_names=[]):
     # following the alitv way...
