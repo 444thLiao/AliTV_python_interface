@@ -181,9 +181,12 @@ def split_gbk(genome_files, odir,
         else:
             tqdm.write("no validated genome", genome_file)
             continue
-        g2info = genome2gene_info[genome_file]
+        g2info = genome2gene_info
         # get target genes
-        target_genes = target_gene_dict[genome_name]
+        target_genes = target_gene_dict.get(genome_name,None)
+        if target_genes is None:
+            tqdm.write(f"{genome_name} doesn't have target_gene, please check it")
+            continue
         if fuzzy_match:
             # if using fuzzy match
             # renew the target_genes
@@ -203,14 +206,16 @@ def split_gbk(genome_files, odir,
             pos1 = g2info[gene]['start']
             pos2 = g2info[gene]['end']
             contig = g2info[gene]['contig_name']
-            contig2pos_remained[contig] += [int(pos1), int(pos2), gene]
+            contig2pos_remained[contig].append((int(pos1), int(pos2), gene))
         if num_p[1] == 'bp':
             expand_len = num_p[0]
             # filter out some contig extend too long
             contigs_list = []
-            for _contig in list(contig2pos_remained):
-                pos_list = contig2pos_remained[_contig][:-1]
-                if (max(pos_list) - min(pos_list)) >= 2 * expand_len:
+            for _contig,pos_list in contig2pos_remained.items():
+                min_pos = min(pos_list,key=lambda x:x[0])[0]
+                max_pos = max(pos_list,key=lambda x:x[1])[1]
+
+                if (max_pos - min_pos) >= 2 * expand_len:
                     contig2pos_remained.pop(_contig)
                     continue
 
@@ -235,8 +240,8 @@ def split_gbk(genome_files, odir,
             expand_CDS = num_p[0]
             contigs_list = []
             for contig, info in contig2pos_remained.items():
-                left_most_cds = min(info)[-1]
-                right_most_cds = max(info)[-1]
+                left_most_cds = min(info,key=lambda x:x[0])[-1]
+                right_most_cds = max(info,key=lambda x:x[0])[-1]
 
                 order_fea = contig2order_fea[contig]
                 left_most_idx = order_fea.index(left_most_cds)
@@ -287,7 +292,7 @@ def parse_nump(num_p):
 @click.option("-odir", "odir")
 @click.option("-s", "suffix", default='gbk')
 @click.option("-r", "num_p",
-              help='number of locus you want to truncate. Normally it just a approximate number. '
+              help='maximum number of locus you want to truncate. Normally it just a approximate number. '
                    'You could use 50p to mention 50 protein/CDS or 15e3bp to mention 150000bp ',
               default='50p')
 @click.option("--fuzzy-match", "fuzzy_match", is_flag=True, default=False)
@@ -296,7 +301,6 @@ def cli(infile, indir, odir, suffix, fuzzy_match, num_p, force):
     all_gbk = glob(join(indir, f'*.{suffix}'))
     genome2target_locus = get_information(infile)
     num_p = parse_nump(num_p)
-
     split_gbk(genome_files=all_gbk,
               odir=odir,
               suffix=suffix,
@@ -304,8 +308,10 @@ def cli(infile, indir, odir, suffix, fuzzy_match, num_p, force):
               num_p=num_p,
               force=force,
               fuzzy_match=fuzzy_match)
-    
+
 
 
 if __name__ == '__main__':
     cli()
+
+    # python3 ~/software/AliTV_python_interface/api/truncate_genome_from_target.py -i ./test.infile -indir ./raw_gbk -odir ./split_gbk -f -r 50p
