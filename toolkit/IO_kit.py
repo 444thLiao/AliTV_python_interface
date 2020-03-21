@@ -5,7 +5,7 @@ from os.path import expanduser, abspath, exists, join, basename, dirname
 
 import pandas as pd
 from Bio import SeqIO
-from ete3 import Tree
+from ete3 import Tree,TreeNode
 from tqdm import tqdm
 
 default_colors = ['#2E91E5', '#E15F99', '#1CA71C', '#FB0D0D', '#DA16FF', '#222A2A', '#B68100', '#750D86', '#EB663B', '#511CFB', '#00A08B', '#FB00D1', '#FC0080', '#B2828D', '#6C7C32', '#778AAE', '#862A16', '#A777F1', '#620042', '#1616A7', '#DA60CA', '#6C4516', '#0D2A63', '#AF0038']
@@ -65,12 +65,27 @@ def get_protein_info_from_gbk(gbk, protein):
                 return seq_record.id, s, e
 
 
-def get_files_from_dir(file,
+def get_files_from_dir(file=None,
                        indir=None,
+                       suffix='fna',
                        how='from file'):
+    """
+
+    :param file:
+    :param indir:
+    :param suffix:
+    :param how:
+    :return:
+    """
     indir = process_path(indir)
     if not exists(indir):
         raise IOError(f"indir {indir} doesn't exists")
+    if file is None:
+        file_list = glob(join(indir,f'*.{suffix}'))
+        file_list = sorted(file_list)
+        file_list = list(zip([basename(f).rpartition('.')[0] for f in file_list],
+                             file_list))
+        return file_list
     files_list = []
     if how == 'from file':
         names = list(open(file).readlines())
@@ -85,7 +100,7 @@ def get_files_from_dir(file,
             file_path = process_path(f[0])
             files_list.append((name, file_path))
         elif len(f) > 1:
-            print(f"Warning! Duplicated files for id {name}. ")
+            print(f"Warning! Duplicated files for id {name}. It will be passed")
             pass
         else:
             pass
@@ -182,3 +197,18 @@ def read_annotation_table(f, name2seq):
             data_fea[gene].append(_dict)
     return conf_fea, data_fea
 
+def deep_scan(tree):
+    if tree.is_leaf():
+        return {'children':{"name":tree.name}}
+    else:
+        return_v = []
+        child = tree.children
+        for c in child:
+            return_v.append({"children":deep_scan(c)})
+        return return_v
+
+def nwk2json(treefile):
+    # following the alitv way...
+    t = read_tree(treefile)
+    json_v = deep_scan(t)
+    return json_v

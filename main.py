@@ -8,7 +8,7 @@ from os.path import join
 import click
 
 from default import json_obj_default
-from toolkit import get_files_from_dir, alignment_batch, to_name2seq_num, get_link_info,get_chrome_info,read_annotation_table
+from toolkit import get_files_from_dir, alignment_batch, to_name2seq_num, get_link_info,get_chrome_info,read_annotation_table,nwk2json
 import json
 
 def main(genome_list=None,
@@ -21,18 +21,24 @@ def main(genome_list=None,
          alignment_ways='blastn',
          parallel=0,
          only_align=False,
+         suffix='fna',
          ):
     # prepare IO
     ali_odir = join(odir, 'tmp_ali_out')
     # get a list of (name,file_path)
     if genome_list is None and tree_file is None and enable_stepwise:
+        # no genome list file which indicate order
+        # no tree file which also indicate order
+        # enable stepwise is meanless
         print('Warning, no designated order is given but enable stepwise alignment. ')
-        order_files = get_files_from_dir(genome_list,
+        order_files = get_files_from_dir(file=genome_list,
                                          indir=indir,
-                                         how='from file')
+                                         suffix=suffix,)
+        # it will return list of files with suffix in indir
     elif genome_list is not None:
         order_files = get_files_from_dir(genome_list,
                                          indir=indir,
+
                                          how='from file')
     elif tree_file is not None:
         order_files = get_files_from_dir(tree_file,
@@ -40,7 +46,7 @@ def main(genome_list=None,
                                          how='from tree')
     else:
         raise Exception('wrong')
-    # run alignment and get info from blast infor
+    # run alignment and get info from blast output
     names = [_[0] for _ in order_files]
     files = [_[1] for _ in order_files]
     used_seq = alignment_batch(files,
@@ -60,9 +66,6 @@ def main(genome_list=None,
     # previous is
     if only_align:
         return
-    # make annotations
-    if annotation_table is not None:
-        conf_fea, data_fea = read_annotation_table(annotation_table,name2seq)
 
     # if not annotations need to add
     json_obj = json_obj_default.copy()
@@ -79,8 +82,11 @@ def main(genome_list=None,
     json_obj['data']['features']['link'].update(linkfea_dict)
     json_obj['data']['links'] = {}
     json_obj['data']['links'].update(link_dict)
+    if tree_file is not None:
+        json_obj['data']['tree'] = nwk2json(tree_file)
     json_obj['data']['karyo']['chromosomes'] = chr_dict
     if annotation_table is not None:
+        conf_fea, data_fea = read_annotation_table(annotation_table, name2seq)
         json_obj['data']['features'].update(data_fea)
         json_obj["conf"]['features']['supportedFeatures'].update(conf_fea)
     # auto conf part
