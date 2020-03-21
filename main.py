@@ -99,15 +99,6 @@ def main(genome_list=None,
         json.dump(json_obj, f1)
 
 
-main(tree_file='./test_d/test.newick',
-     indir='./test_d/split_gbk/fna_dir/',
-     odir='./test_d/ali_o',
-     )
-
-main(tree_file="/home-user/thliao/data/plancto/test/hzs_gene.infile",
-     indir="/home-user/thliao/data/plancto/test/split_gbk/fna_dir",
-     odir="/home-user/thliao/data/plancto/test/ali_odir/")
-
 
 @click.command()
 @click.option("-gl", "genome_list", default=None)
@@ -135,6 +126,15 @@ def cli(genome_list, tree_file, indir, odir, annotation_table, enable_stepwise, 
          suffix=suffix)
     pass
 
+#
+# main(tree_file='./test_d/test.newick',
+#      indir='./test_d/split_gbk/fna_dir/',
+#      odir='./test_d/ali_o',
+#      )
+#
+# main(tree_file="/home-user/thliao/data/plancto/test/hzs_gene.infile",
+#      indir="/home-user/thliao/data/plancto/test/split_gbk/fna_dir",
+#      odir="/home-user/thliao/data/plancto/test/ali_odir/")
 
 if __name__ == '__main__':
     cli()
