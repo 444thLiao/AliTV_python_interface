@@ -211,7 +211,7 @@ def split_gbk(genome_files, odir,
             expand_len = num_p[0]
             # filter out some contig extend too long
             contigs_list = []
-            for _contig, pos_list in contig2pos_remained.items():
+            for _contig, pos_list in list(contig2pos_remained.items()):
                 min_pos = min(pos_list, key=lambda x: x[0])[0]
                 max_pos = max(pos_list, key=lambda x: x[1])[1]
 
@@ -239,7 +239,7 @@ def split_gbk(genome_files, odir,
         elif num_p[1] == 'CDS':
             expand_CDS = num_p[0]
             contigs_list = []
-            for contig, info in contig2pos_remained.items():
+            for contig, info in list(contig2pos_remained.items()):
                 left_most_cds = min(info, key=lambda x: x[0])[-1]
                 right_most_cds = max(info, key=lambda x: x[0])[-1]
 
