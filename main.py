@@ -3,13 +3,14 @@
 ####
 ####  written by tianhua liao on 2020/02/17
 #################################################################################
+import json
 from os.path import join
 
 import click
 
 from default import json_obj_default
-from toolkit import get_files_from_dir, alignment_batch, to_name2seq_num, get_link_info,get_chrome_info,read_annotation_table,nwk2json
-import json
+from toolkit import get_files_from_dir, alignment_batch, to_name2seq_num, get_link_info, get_chrome_info, read_annotation_table, nwk2json
+
 
 def main(genome_list=None,
          tree_file=None,
@@ -25,6 +26,7 @@ def main(genome_list=None,
          ):
     # prepare IO
     ali_odir = join(odir, 'tmp_ali_out')
+    json_txt = None  # TREE
     # get a list of (name,file_path)
     if genome_list is None and tree_file is None and enable_stepwise:
         # no genome list file which indicate order
@@ -33,17 +35,17 @@ def main(genome_list=None,
         print('Warning, no designated order is given but enable stepwise alignment. ')
         order_files = get_files_from_dir(file=genome_list,
                                          indir=indir,
-                                         suffix=suffix,)
+                                         suffix=suffix, )
         # it will return list of files with suffix in indir
     elif genome_list is not None:
-        order_files = get_files_from_dir(genome_list,
-                                         indir=indir,
-                                         how='from file')
+        order_files, names = get_files_from_dir(genome_list,
+                                                indir=indir,
+                                                how='from file')
     elif tree_file is not None:
-        order_files = get_files_from_dir(file=tree_file,
-                                         indir=indir,
-                                         how='from tree')
-        json_txt = nwk2json(tree_file)
+        order_files, names = get_files_from_dir(file=tree_file,
+                                                indir=indir,
+                                                how='from tree')
+        json_txt = nwk2json(tree_file, odir, subset_names=names)
     else:
         raise Exception('wrong')
     # run alignment and get info from blast output
@@ -62,7 +64,7 @@ def main(genome_list=None,
                                             name2seq)
 
     chr_dict = get_chrome_info(files,
-                               name2seq,)
+                               name2seq, )
     # previous is
     if only_align:
         return
@@ -82,26 +84,53 @@ def main(genome_list=None,
     json_obj['data']['features']['link'].update(linkfea_dict)
     json_obj['data']['links'] = {}
     json_obj['data']['links'].update(link_dict)
-    if tree_file is not None:
-        json_obj['data']['tree'] = nwk2json(tree_file)
+    if json_txt is not None:
+        json_obj['data']['tree'] = json_txt
     json_obj['data']['karyo']['chromosomes'] = chr_dict
     if annotation_table is not None:
         conf_fea, data_fea = read_annotation_table(annotation_table, name2seq)
         json_obj['data']['features'].update(data_fea)
         json_obj["conf"]['features']['supportedFeatures'].update(conf_fea)
     # auto conf part
-    json_obj['conf']['graphicalParameters']['canvasHeight'] = len(names)*120
+    json_obj['conf']['graphicalParameters']['canvasHeight'] = len(names) * 120
     json_obj['conf']['graphicalParameters']['tickDistance'] = 10000
 
-    with open(join(odir,'aliTV_prepared.json'),'w') as f1:
-        json.dump(json_obj,f1)
+    with open(join(odir, 'aliTV_prepared.json'), 'w') as f1:
+        json.dump(json_obj, f1)
+
 
 main(tree_file='./test_d/test.newick',
      indir='./test_d/split_gbk/fna_dir/',
      odir='./test_d/ali_o',
      )
+
+main(tree_file="/home-user/thliao/data/plancto/test/hzs_gene.infile",
+     indir="/home-user/thliao/data/plancto/test/split_gbk/fna_dir",
+     odir="/home-user/thliao/data/plancto/test/ali_odir/")
+
+
 @click.command()
-def cli():
+@click.option("-gl", "genome_list", default=None)
+@click.option("-tf", "tree_file", default=None)
+@click.option("-indir", "indir", default="./")
+@click.option("-odir", "odir", default="./")
+@click.option("-at", "annotation_table", default=None)
+@click.option("-no-stepwise", "enable_stepwise", is_flag=True, default=True)
+@click.option("-align", "alignment_ways", default='blastn')
+@click.option("-p", "parallel", default=0)
+@click.option("-only_align", "only_align", is_flag=True, default=False)
+@click.option("-s", "suffix", default='fna')
+def cli(genome_list, tree_file, indir, odir, annotation_table, enable_stepwise, force, alignment_ways, parallel, only_align, suffix):
+    main(genome_list=genome_list,
+         tree_file=tree_file,
+         indir=indir,
+         odir=odir,
+         annotation_table=annotation_table,
+         enable_stepwise=enable_stepwise,
+         alignment_ways=alignment_ways,
+         parallel=parallel,
+         only_align=only_align,
+         suffix=suffix)
     pass
 
 

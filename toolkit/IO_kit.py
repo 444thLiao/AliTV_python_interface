@@ -86,7 +86,7 @@ def get_files_from_dir(file=None,
         file_list = list(zip([basename(f).rpartition('.')[0] for f in file_list],
                              file_list))
         return file_list,[_[0] for _ in file_list]
-    files_list = []
+    file_list = []
     if how == 'from file':
         names = list(open(file).readlines())
     elif how == 'from tree':
@@ -98,13 +98,13 @@ def get_files_from_dir(file=None,
         f = glob(join(indir, f'{name}*'))
         if len(f) == 1:
             file_path = process_path(f[0])
-            files_list.append((name, file_path))
+            file_list.append((name, file_path))
         elif len(f) > 1:
             print(f"Warning! Duplicated files for id {name}. It will be passed")
             pass
         else:
             pass
-    return files_list,names
+    return file_list, [_[0] for _ in file_list]
 
 
 def to_name2seq_num(genomes):
@@ -121,7 +121,7 @@ def to_name2seq_num(genomes):
     return name2seq
 
 
-def get_link_info(indir, name2seq, suffix='.aliout'):
+def get_link_info(indir, name2seq, suffix='aliout'):
     """
     The file which stodge link info is for blastn (format 6)
     If the
@@ -164,19 +164,44 @@ def get_link_info(indir, name2seq, suffix='.aliout'):
 def get_chrome_info(genome_files, name2seq,stodge_seq=False):
     _dict = {}
     for gf in tqdm(genome_files):
-        records = SeqIO.parse(gf, format='genbank')
-        for record in records:
-            gn = basename(gf).replace('.gbk', '')
-            id_name = name2seq[gn + '_' + record.id]
-            _dict[id_name] = {}
-            _dict[id_name]['genome_id'] = gn
-            _dict[id_name]['length'] = len(record)
-            _dict[id_name]['name'] = id_name
-            _dict[id_name]['seq'] = '' if not stodge_seq else str(record.seq)
+        if gf.endswith('gbk'):
+            records = SeqIO.parse(gf, format='genbank')
+            for record in records:
+                gn = basename(gf).replace('.gbk', '')
+                id_name = name2seq[gn + '_' + record.id]
+                _dict[id_name] = {}
+                _dict[id_name]['genome_id'] = gn
+                _dict[id_name]['length'] = len(record)
+                _dict[id_name]['name'] = id_name
+                _dict[id_name]['seq'] = '' if not stodge_seq else str(record.seq)
+        else:
+            try:
+                records = SeqIO.parse(gf, format='fasta')
+            except:
+                raise Exception('unknown input... not genbank with gbk as suffix. not fasta file')
+            for record in records:
+                gn = basename(gf).rpartition('.')[0]
+                id_name = name2seq[gn + '_' + record.id]
+                _dict[id_name] = {}
+                _dict[id_name]['genome_id'] = gn
+                _dict[id_name]['length'] = len(record)
+                _dict[id_name]['name'] = id_name
+                _dict[id_name]['seq'] = '' if not stodge_seq else str(record.seq)
     return _dict
 
 
 def read_annotation_table(f, name2seq):
+    """
+    read from a table with annotation information
+    the table should like
+    1. no header
+    2. separator is tab(\t)
+    3. should be
+       genome name {\t} contig id {\t} start {\t} end {\t} annotation name (like some genes)
+    :param f:
+    :param name2seq:
+    :return:
+    """
     conf_fea = defaultdict(dict)
     data_fea = {}
     df = pd.read_csv(f, sep='\t', header=None)
@@ -199,7 +224,7 @@ def read_annotation_table(f, name2seq):
 
 def deep_scan(tree):
     if tree.is_leaf():
-        return {'children':{"name":tree.name}}
+        return [{'children':[{"name":tree.name}]}]
     else:
         return_v = []
         child = tree.children
@@ -207,10 +232,15 @@ def deep_scan(tree):
             return_v.append({"children":deep_scan(c)})
         return return_v
 
-def nwk2json(treefile,subset_names=[]):
+def nwk2json(treefile,odir,subset_names=[]):
     # following the alitv way...
     t = read_tree(treefile)
     if subset_names:
-       t.prune(subset_names)
+        t.prune(subset_names)
+        text = t.write()
+        if not exists(odir):
+            os.makedirs(odir)
+        with open(join(odir,'used.newick'),'w') as f1:
+            f1.write(text)
     json_v = deep_scan(t)
     return json_v
