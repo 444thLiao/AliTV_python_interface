@@ -7,7 +7,7 @@ Accept a file with gene locus and its annotations AND a directory which stodge g
 import sys
 from glob import glob
 from os.path import *
-
+from tqdm import tqdm
 import click
 
 sys.path.insert(0, dirname(dirname(__file__)))
@@ -18,12 +18,21 @@ def parsed_infile(infile):
     locus2gene = {}
     locus2genome = {}
     gbk2gbk_obj = {}
-    for row in open(infile):
+    f = open(infile)
+    for row in tqdm(f):
         row = row.strip('\n')
-        locus, gene, gbk_file = row.split('\t')
-        gbk_name = basename(gbk_file).rpartition('.')[0]
-        locus2genome[locus] = gbk_name
-        gbk2gbk_obj[gbk_name] = get_all_CDS_from_gbk(gbk_file)
+        objs = row.split('\t')
+        if len(objs) == 2:
+            locus, gene = objs
+            locus2gene[locus] = gene
+        elif len(objs) == 3:
+            locus, gene, gbk_file = objs
+
+            locus2gene[locus] = gene
+            gbk_name = basename(gbk_file).rpartition('.')[0]
+            locus2genome[locus] = gbk_name
+            gbk2gbk_obj[gbk_name] = get_all_CDS_from_gbk(gbk_file)
+
     return locus2gene, locus2genome, gbk2gbk_obj
 
 
@@ -69,3 +78,5 @@ def cli(infile, indir, ofile):
 
 if __name__ == '__main__':
     cli()
+
+# python3 ~/software/AliTV_python_interface/api/format_anno_table.py -i ../gene_trees/e20_genes.mapping.txt -indir ./split_gbk/ -o ./annotation.tab
