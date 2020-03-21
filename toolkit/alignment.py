@@ -6,13 +6,17 @@ from subprocess import check_call
 
 from tqdm import tqdm
 
-from toolkit import process_path
+from toolkit import process_path,gbk2fna
 
 
 def run(cmd):
     check_call(cmd,
                shell=True)
 
+def gbk2fna_path(f):
+    return join(dirname(f),
+                          'fna',
+                          basename(f).replace('gbk','fna'))
 
 def align_unit(f1, f2, ofile, method='blastn',
                force=True, parallel=0):
@@ -23,10 +27,11 @@ def align_unit(f1, f2, ofile, method='blastn',
                 os.system(cmd)
             else:
                 return cmd
+        return ''
     # elif method is None:
     #     pass
     # else:
-    #     #todo
+    #     #todo: fix with other kinds of tool
     #     pass
 
 
@@ -37,6 +42,17 @@ def alignment_batch(genomes,
                     parallel=0,
                     force=True,
                     how='stepwise'):
+
+    new_genomes = []
+    for g in genomes:
+        if g.endswith('gbk') and not exists(gbk2fna_path(g)):
+            g = gbk2fna(g,
+                         gbk2fna_path(g))
+        elif exists(gbk2fna_path(g)):
+            g = gbk2fna_path(g)
+        new_genomes.append(g)
+    genomes = new_genomes[::]
+
     g2name = dict(zip(genomes,names))
     odir = process_path(odir)
     if not exists(odir):
@@ -53,13 +69,12 @@ def alignment_batch(genomes,
         return
     iter_objs = tqdm(iter_objs) if parallel == 0 else iter_objs
     tqdm.write(f"start running the {how} alignment based on designated order.")
-
     cmds = []
     for file1, file2 in iter_objs:
         name1 = g2name[file1]
         name2 = g2name[file2]
         ofile = join(odir, name1 + '_to_' + name2 + '.aliout')
-        f1.write('\t'.join([file1, file2, name1, name2, ofile]))
+        f1.write('\t'.join([file1, file2, name1, name2, ofile,'\n']))
         # in case there is '_to_' in file name... it might happen...
         # it records some file
         cmds.append(align_unit(file1, file2, ofile,
@@ -72,3 +87,4 @@ def alignment_batch(genomes,
         with mp.Pool(processes=parallel) as tp:
             r = list(tqdm(tp.imap(run, cmds), total=len(cmds)))
     f1.close()
+    return genomes
