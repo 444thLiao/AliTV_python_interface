@@ -219,9 +219,9 @@ def split_gbk(genome_files, odir,
                     contig2pos_remained.pop(_contig)
                     continue
 
-                start = int(min(pos_list) - expand_len)
+                start = int(min_pos - expand_len)
                 start = 0 if start < 0 else start
-                end = int(max(pos_list) + expand_len)
+                end = int(max_pos + expand_len)
 
                 contig_obj = [record
                               for record in records
