@@ -38,12 +38,12 @@ def main(genome_list=None,
     elif genome_list is not None:
         order_files = get_files_from_dir(genome_list,
                                          indir=indir,
-
                                          how='from file')
     elif tree_file is not None:
-        order_files = get_files_from_dir(tree_file,
+        order_files = get_files_from_dir(file=tree_file,
                                          indir=indir,
                                          how='from tree')
+        json_txt = nwk2json(tree_file)
     else:
         raise Exception('wrong')
     # run alignment and get info from blast output
@@ -96,7 +96,10 @@ def main(genome_list=None,
     with open(join(odir,'aliTV_prepared.json'),'w') as f1:
         json.dump(json_obj,f1)
 
-
+main(tree_file='./test_d/test.newick',
+     indir='./test_d/split_gbk/fna_dir/',
+     odir='./test_d/ali_o',
+     )
 @click.command()
 def cli():
     pass

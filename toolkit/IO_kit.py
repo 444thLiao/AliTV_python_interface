@@ -85,7 +85,7 @@ def get_files_from_dir(file=None,
         file_list = sorted(file_list)
         file_list = list(zip([basename(f).rpartition('.')[0] for f in file_list],
                              file_list))
-        return file_list
+        return file_list,[_[0] for _ in file_list]
     files_list = []
     if how == 'from file':
         names = list(open(file).readlines())
@@ -104,7 +104,7 @@ def get_files_from_dir(file=None,
             pass
         else:
             pass
-    return files_list
+    return files_list,names
 
 
 def to_name2seq_num(genomes):
@@ -207,8 +207,10 @@ def deep_scan(tree):
             return_v.append({"children":deep_scan(c)})
         return return_v
 
-def nwk2json(treefile):
+def nwk2json(treefile,subset_names=[]):
     # following the alitv way...
     t = read_tree(treefile)
+    if subset_names:
+       t.prune(subset_names)
     json_v = deep_scan(t)
     return json_v
