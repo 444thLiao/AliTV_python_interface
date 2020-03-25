@@ -16,7 +16,7 @@ def get_information(infile):
     # the target locus ID could be multiple but separate each one with comma(,)
     # if you turn on the fuzzy match ( you could simple pass part of the name of locus ) But carefully...
     # it only usefully for the data with exact number but different prefix of locus.
-    rows = [row.split('\t') for row in open(infile).read().split('\n')]
+    rows = [row.split('\t') for row in open(infile).read().split('\n') if row]
     genome2target_locus = {genome: [locus for locus in mlocus.split(',')]
                            for genome, mlocus in rows
                            }
@@ -163,6 +163,13 @@ def split_gbk(genome_files, odir,
     for genome_file in tqdm(genome_files):
         genome_name = basename(genome_file).rpartition('.')[0]
         ofile = join(odir, f'{genome_name}.{suffix}')
+        g2info = genome2gene_info
+
+        # get target genes
+        target_genes = target_gene_dict.get(genome_name, None)
+        if target_genes is None:
+            tqdm.write(f"{genome_name} doesn't have target_gene, please check it")
+            continue
 
         # read genomic information of proteins/CDS
         if exists(genome_file) and (not exists(ofile) or force):
@@ -181,12 +188,7 @@ def split_gbk(genome_files, odir,
         else:
             tqdm.write("no validated genome", genome_file)
             continue
-        g2info = genome2gene_info
-        # get target genes
-        target_genes = target_gene_dict.get(genome_name, None)
-        if target_genes is None:
-            tqdm.write(f"{genome_name} doesn't have target_gene, please check it")
-            continue
+
         if fuzzy_match:
             # if using fuzzy match
             # renew the target_genes

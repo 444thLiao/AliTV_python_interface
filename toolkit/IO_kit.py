@@ -8,7 +8,8 @@ from Bio import SeqIO
 from ete3 import Tree
 from tqdm import tqdm
 
-default_colors = ['#2E91E5', '#E15F99', '#1CA71C', '#FB0D0D', '#DA16FF', '#222A2A', '#B68100', '#750D86', '#EB663B', '#511CFB', '#00A08B', '#FB00D1', '#FC0080', '#B2828D', '#6C7C32', '#778AAE', '#862A16', '#A777F1', '#620042', '#1616A7', '#DA60CA', '#6C4516', '#0D2A63', '#AF0038']
+default_colors = ['#2E91E5', '#E15F99', '#1CA71C', '#FB0D0D', '#DA16FF', '#222A2A', '#B68100', '#750D86', '#EB663B', '#511CFB', '#00A08B', '#FB00D1', '#FC0080', '#B2828D',
+                  '#6C7C32', '#778AAE', '#862A16', '#A777F1', '#620042', '#1616A7', '#DA60CA', '#6C4516', '#0D2A63', '#AF0038']
 
 
 def process_path(path):
@@ -92,18 +93,20 @@ def get_files_from_dir(file=None,
     elif how == 'from tree':
         t = read_tree(file)
         names = t.get_leaf_names()
+        print(f"In given tree, {len(names)} were presented ")
     else:
         return
     for name in names:
-        f = glob(join(indir, f'{name}*'))
+        f = glob(join(indir, f'{name}.*'))
         if len(f) == 1:
             file_path = process_path(f[0])
             file_list.append((name, file_path))
-        elif len(f) > 1:
+        elif len(f) > 1 :
             print(f"Warning! Duplicated files for id {name}. It will be passed")
             pass
         else:
             pass
+    print(f"Finally, {len(file_list)} were retrieved ")
     return file_list, [_[0] for _ in file_list]
 
 
@@ -161,7 +164,7 @@ def get_link_info(indir, name2seq, suffix='aliout'):
     return link_dict, linkfea_dict
 
 
-def get_chrome_info(genome_files, name2seq,stodge_seq=False):
+def get_chrome_info(genome_files, name2seq, stodge_seq=False):
     _dict = {}
     for gf in tqdm(genome_files):
         if gf.endswith('gbk'):
@@ -212,7 +215,7 @@ def read_annotation_table(f, name2seq):
         conf_fea[gene]['height'] = "30"
         conf_fea[gene]['visible'] = True
     for gene, sub_df_index in gb.groups.items():
-        sub_df = df.loc[sub_df_index,:]
+        sub_df = df.loc[sub_df_index, :]
         data_fea[gene] = []
         for idx, row in sub_df.iterrows():
             _dict = dict(start=row[2],
@@ -222,17 +225,40 @@ def read_annotation_table(f, name2seq):
             data_fea[gene].append(_dict)
     return conf_fea, data_fea
 
-def deep_scan(tree):
-    if tree.is_leaf():
-        return [{'children':[{"name":tree.name}]}]
+
+# def deep_scan(current_node):
+#     # not aligned leafs
+#     if current_node.is_leaf():
+#         return [{"name": current_node.name}]
+#     else:
+#         return_v = []
+#         child = current_node.children
+#         for c in child:
+#             return_v.append({"children": deep_scan(c)})
+#         return return_v
+
+
+def deep_scan(current_node, root=None):
+    # aligned leafs
+    if root is None:
+        root = current_node
+    _, max_depth = root.get_farthest_leaf()
+    if current_node.is_leaf():
+        ad = max_depth - root.get_distance(current_node)
+        # abbrev. across depth
+        _dict = {"name": current_node.name}
+        for _ in range(int(ad)):
+            _dict = {"children": [_dict]}
+        return _dict
     else:
         return_v = []
-        child = tree.children
+        child = current_node.children
         for c in child:
-            return_v.append({"children":deep_scan(c)})
+            return_v.append({"children": deep_scan(c, root=root)})
         return return_v
 
-def nwk2json(treefile,odir,subset_names=[]):
+
+def nwk2json(treefile, odir, subset_names=[]):
     # following the alitv way...
     t = read_tree(treefile)
     if subset_names:
@@ -240,7 +266,7 @@ def nwk2json(treefile,odir,subset_names=[]):
         text = t.write()
         if not exists(odir):
             os.makedirs(odir)
-        with open(join(odir,'used.newick'),'w') as f1:
+        with open(join(odir, 'used.newick'), 'w') as f1:
             f1.write(text)
-    json_v = {"children":deep_scan(t)}
+    json_v = {"children": deep_scan(t)}
     return json_v

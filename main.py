@@ -23,6 +23,7 @@ def main(genome_list=None,
          parallel=0,
          only_align=False,
          suffix='fna',
+         exact=False,
          ):
     # prepare IO
     ali_odir = join(odir, 'tmp_ali_out')
@@ -58,6 +59,10 @@ def main(genome_list=None,
                                how='stepwise' if enable_stepwise else None,
                                force=force,
                                parallel=parallel)
+
+    # previous is
+    if only_align:
+        return
     # get information from blast results and raw gbk files
     name2seq = to_name2seq_num(used_seq)
     link_dict, linkfea_dict = get_link_info(ali_odir,
@@ -65,10 +70,6 @@ def main(genome_list=None,
 
     chr_dict = get_chrome_info(files,
                                name2seq, )
-    # previous is
-    if only_align:
-        return
-
     # if not annotations need to add
     json_obj = json_obj_default.copy()
     json_obj['filters']['karyo']['chromosomes'] = {}
@@ -112,7 +113,8 @@ def main(genome_list=None,
 @click.option("-only_align", "only_align", is_flag=True, default=False)
 @click.option("-s", "suffix", default='fna')
 @click.option("-f", "force", is_flag=True, default=False)
-def cli(genome_list, tree_file, indir, odir, annotation_table, enable_stepwise, force, alignment_ways, parallel, only_align, suffix):
+@click.option("-exact","exact",is_flag=True,default=False)
+def cli(genome_list, tree_file, indir, odir, annotation_table, enable_stepwise, force, alignment_ways, parallel, only_align, suffix,exact):
     main(genome_list=genome_list,
          tree_file=tree_file,
          indir=indir,
@@ -123,7 +125,8 @@ def cli(genome_list, tree_file, indir, odir, annotation_table, enable_stepwise, 
          parallel=parallel,
          only_align=only_align,
          force=force,
-         suffix=suffix)
+         suffix=suffix,
+         exact=exact)
     pass
 
 #
