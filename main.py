@@ -127,7 +127,6 @@ def cli(genome_list, tree_file, indir, odir, annotation_table, enable_stepwise, 
          force=force,
          suffix=suffix,
          exact=exact)
-    pass
 
 #
 # main(tree_file='./test_d/test.newick',

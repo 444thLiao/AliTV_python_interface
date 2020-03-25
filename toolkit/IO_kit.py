@@ -67,7 +67,10 @@ def gbk2faa(gbk, faa):
     for seq_record in SeqIO.parse(gbk, format="genbank"):
         for seq_feature in seq_record.features:
             if seq_feature.type == "CDS":
-                assert len(seq_feature.qualifiers['translation']) == 1
+                if "translation" not in seq_feature.qualifiers:
+                    continue
+                if len(seq_feature.qualifiers['translation']) != 1:
+                    continue
                 faa_handle.write(">%s from %s\n%s\n" % (
                     seq_feature.qualifiers['locus_tag'][0],
                     seq_record.name,
@@ -237,10 +240,16 @@ def read_annotation_table(f, name2seq):
         sub_df = df.loc[sub_df_index, :]
         data_fea[gene] = []
         for idx, row in sub_df.iterrows():
+            format_name = f"{row[0]}_{row[1]}"
+            if format_name not in name2seq:
+                pass
+            format_name = f"{row[0]}"
+            if format_name not in name2seq:
+                continue
             _dict = dict(start=row[2],
                          end=row[3],
                          name=gene,
-                         karyo=name2seq[f"{row[0]}_{row[1]}"])
+                         karyo=name2seq[format_name])
             data_fea[gene].append(_dict)
     return conf_fea, data_fea
 
