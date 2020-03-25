@@ -273,7 +273,10 @@ def deep_scan(current_node, root=None):
         return_v = []
         child = current_node.children
         for c in child:
-            return_v.append({"children": deep_scan(c, root=root)})
+            _re = deep_scan(c, root=root)
+            if type(_re) == dict:
+                _re = [_re]
+            return_v.append({"children": _re})
         return return_v
 
 
