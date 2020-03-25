@@ -44,8 +44,8 @@ def read_tree(nwk_file):
         try:
             t = Tree(nwk_file, format=f)
             # ignore the distance
-            t = Tree(t.write(format=8), format=8)
-            return t
+            nt = Tree(t.write(format=8), format=8)
+            return nt
         except:
             pass
 
