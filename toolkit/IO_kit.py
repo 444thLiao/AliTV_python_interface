@@ -240,16 +240,19 @@ def read_annotation_table(f, name2seq):
         sub_df = df.loc[sub_df_index, :]
         data_fea[gene] = []
         for idx, row in sub_df.iterrows():
-            format_name = f"{row[0]}_{row[1]}"
-            if format_name not in name2seq:
-                pass
-            format_name = f"{row[0]}"
-            if format_name not in name2seq:
-                continue
-            _dict = dict(start=row[2],
-                         end=row[3],
-                         name=gene,
-                         karyo=name2seq[format_name])
+            format_names = [f"{row[0]}_{row[1]}",
+                            f"{row[0]}",
+                            f"{row[0]}_{row[1].split('.')[0]}"]
+
+            _t = [format_name
+                  for format_name in format_names
+                  if format_name in name2seq]
+            if _t:
+                format_name = _t[0]
+                _dict = dict(start=row[2],
+                             end=row[3],
+                             name=gene,
+                             karyo=name2seq[format_name])
             data_fea[gene].append(_dict)
     return conf_fea, data_fea
 
