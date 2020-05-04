@@ -7,6 +7,7 @@ import json
 from os.path import join
 
 import click
+from tqdm import tqdm
 
 from default import json_obj_default
 from toolkit import get_files_from_dir, alignment_batch, to_name2seq_num, get_link_info, get_chrome_info, read_annotation_table, nwk2json
@@ -23,44 +24,48 @@ def main(genome_list=None,
          parallel=0,
          only_align=False,
          suffix='fna',
+         pairwise=False,
          exact=False,
          ):
-    # prepare IO
+    # prepare the IO
     ali_odir = join(odir, 'tmp_ali_out')
     json_txt = None  # TREE
     # get a list of (name,file_path)
     if genome_list is None and tree_file is None and enable_stepwise:
         # no genome list file which indicate order
         # no tree file which also indicate order
-        # enable stepwise is meanless
+        # enable stepwise is meaningless
         print('Warning, no designated order is given but enable stepwise alignment. ')
         order_files = get_files_from_dir(file=genome_list,
                                          indir=indir,
                                          suffix=suffix, )
         # it will return list of files with suffix in indir
     elif genome_list is not None:
-        order_files, names = get_files_from_dir(genome_list,
-                                                indir=indir,
-                                                how='from file')
+        order_files = get_files_from_dir(file=genome_list,
+                                         indir=indir,
+                                         how='from file')
     elif tree_file is not None:
-        order_files, names = get_files_from_dir(file=tree_file,
-                                                indir=indir,
-                                                how='from tree')
-        json_txt = nwk2json(tree_file, odir, subset_names=names)
+        order_files = get_files_from_dir(file=tree_file,
+                                         indir=indir,
+                                         how='from tree')
+        order_names = [_[0] for _ in order_files]
+        json_txt = nwk2json(tree_file, odir, subset_names=order_names)
     else:
         raise Exception('wrong')
     # run alignment and get info from blast output
-    names = [_[0] for _ in order_files]
+    order_names = [_[0] for _ in order_files]
     files = [_[1] for _ in order_files]
-    used_seq = alignment_batch(files,
-                               names=names,
+    tqdm.write('running alignment')
+    ali_how = 'pairwise' if pairwise else 'stepwise'
+    used_seq = alignment_batch(genomes=files,
+                               names=order_names,
                                odir=ali_odir,
                                alignment_ways=alignment_ways,
-                               how='stepwise' if enable_stepwise else None,
+                               how=ali_how,
                                force=force,
                                parallel=parallel)
-
-    # previous is
+    # if only run the alignment program, it could stop here.
+    # it will generate output directory and stodge the alignment results in it.
     if only_align:
         return
     # get information from blast results and raw gbk files
@@ -78,9 +83,9 @@ def main(genome_list=None,
                             "visible": True}}
         json_obj['filters']['karyo']['chromosomes'].update(_dict)
 
-    json_obj['filters']['karyo']['genome_order'] = names
+    json_obj['filters']['karyo']['genome_order'] = order_names
     json_obj['filters']['karyo']['order'] = list(name2seq.values())
-    ## data part
+    # data part
     json_obj['data']['features']['link'] = {}
     json_obj['data']['features']['link'].update(linkfea_dict)
     json_obj['data']['links'] = {}
@@ -88,17 +93,18 @@ def main(genome_list=None,
     if json_txt is not None:
         json_obj['data']['tree'] = json_txt
     json_obj['data']['karyo']['chromosomes'] = chr_dict
+
     if annotation_table is not None:
         conf_fea, data_fea = read_annotation_table(annotation_table, name2seq)
         json_obj['data']['features'].update(data_fea)
         json_obj["conf"]['features']['supportedFeatures'].update(conf_fea)
+
     # auto conf part
-    json_obj['conf']['graphicalParameters']['canvasHeight'] = len(names) * 120
+    json_obj['conf']['graphicalParameters']['canvasHeight'] = len(order_names) * 120
     json_obj['conf']['graphicalParameters']['tickDistance'] = 10000
 
-    with open(join(odir, 'aliTV_prepared.json'), 'w') as f1:
+    with open(join(odir, 'aliTV_input.json'), 'w') as f1:
         json.dump(json_obj, f1)
-
 
 
 @click.command()
@@ -108,19 +114,24 @@ def main(genome_list=None,
 @click.option("-odir", "odir", default="./")
 @click.option("-at", "annotation_table", default=None)
 @click.option("-no-stepwise", "enable_stepwise", is_flag=True, default=True)
+@click.option("-pairwise", "pairwise", is_flag=True, default=False)
 @click.option("-align", "alignment_ways", default='blastn')
 @click.option("-p", "parallel", default=0)
 @click.option("-only_align", "only_align", is_flag=True, default=False)
 @click.option("-s", "suffix", default='fna')
 @click.option("-f", "force", is_flag=True, default=False)
-@click.option("-exact","exact",is_flag=True,default=False)
-def cli(genome_list, tree_file, indir, odir, annotation_table, enable_stepwise, force, alignment_ways, parallel, only_align, suffix,exact):
+@click.option("-exact", "exact", is_flag=True, default=False)
+def cli(genome_list, tree_file, indir, odir, annotation_table, enable_stepwise, pairwise, force, alignment_ways, parallel, only_align, suffix, exact):
+    if pairwise:
+        enable_stepwise = False
+
     main(genome_list=genome_list,
          tree_file=tree_file,
          indir=indir,
          odir=odir,
          annotation_table=annotation_table,
          enable_stepwise=enable_stepwise,
+         pairwise=pairwise,
          alignment_ways=alignment_ways,
          parallel=parallel,
          only_align=only_align,
@@ -128,17 +139,8 @@ def cli(genome_list, tree_file, indir, odir, annotation_table, enable_stepwise, 
          suffix=suffix,
          exact=exact)
 
-#
-# main(tree_file='./test_d/test.newick',
-#      indir='./test_d/split_gbk/fna_dir/',
-#      odir='./test_d/ali_o',
-#      )
-#
-# main(tree_file="/home-user/thliao/data/plancto/test/hzs_gene.infile",
-#      indir="/home-user/thliao/data/plancto/test/split_gbk/fna_dir",
-#      odir="/home-user/thliao/data/plancto/test/ali_odir/")
 
 if __name__ == '__main__':
     cli()
 
-# python3 ~/software/AliTV_python_interface/main.py -tf ./over20p_bac120.formatted.newick -indir ./split_gbk/fna_dir -odir ./ali_odir/ -at ./annotation.tab
+# python3 ~/software/AliTV_python_interface/main.py -tf ./species.newick -indir ./split_gbk/fna_dir -odir ./ali_odir/ -at ./annotation.tab

@@ -8,14 +8,16 @@ from Bio import SeqIO
 from ete3 import Tree
 from tqdm import tqdm
 
-default_colors = ['#2E91E5', '#E15F99', '#1CA71C', '#FB0D0D', '#DA16FF', '#222A2A', '#B68100', '#750D86', '#EB663B', '#511CFB', '#00A08B', '#FB00D1', '#FC0080', '#B2828D',
+default_colors = ['#2E91E5', '#E15F99', '#1CA71C', '#FB0D0D', '#DA16FF', '#222A2A', '#B68100', '#750D86',
+                  '#EB663B', '#511CFB', '#00A08B', '#FB00D1', '#FC0080', '#B2828D',
                   '#6C7C32', '#778AAE', '#862A16', '#A777F1', '#620042', '#1616A7', '#DA60CA', '#6C4516', '#0D2A63', '#AF0038']
 
 
 def process_path(path):
     if path is None:
         return None
-    if not '/' in path:
+    if not '/' in path and ':' not in path:
+        # : for windows, / for linux
         path = './' + path
     if path.startswith('~'):
         path = expanduser(path)
@@ -43,14 +45,11 @@ def read_tree(nwk_file):
     for f in [0, 1, 3, 5, 8]:
         try:
             t = Tree(nwk_file, format=f)
-            # ignore the distance
+            # ignore the distance, only get the topology
             nt = Tree(t.write(format=8), format=8)
             return nt
         except:
             pass
-
-
-
 
 def gbk2fna(gbk, fna):
     fna = process_path(fna)
@@ -82,10 +81,10 @@ def get_protein_info_from_gbk(gbk, protein):
     for seq_record in SeqIO.parse(gbk, format="genbank"):
         for seq_feature in seq_record.features:
             if seq_feature.type == "CDS" and protein in seq_feature.qualifiers['locus_tag']:
-                s, e = seq_feature.location.start.real, seq_feature.location.end.real
-                s = str(s)
-                e = str(e)
-                return seq_record.id, s, e
+                start, end = seq_feature.location.start.real, seq_feature.location.end.real
+                start = str(start)
+                end = str(end)
+                return seq_record.id, start, end
 
 
 def get_files_from_dir(file=None,
@@ -94,15 +93,18 @@ def get_files_from_dir(file=None,
                        how='from file'):
     """
 
-    :param file:
+    :param file: a file list all genomes need to be processed. the order is important
     :param indir:
     :param suffix:
     :param how:
     :return:
+    return object is a list of tuple which stodge from the genome name to the path of file.
+    Not using dict is because the name could be duplicated.
+
     """
     indir = process_path(indir)
     if not exists(indir):
-        raise IOError(f"indir {indir} doesn't exists")
+        raise IOError(f"indir '{indir}' doesn't exist")
     if file is None:
         file_list = glob(join(indir,f'*.{suffix}'))
         file_list = sorted(file_list)
@@ -112,10 +114,11 @@ def get_files_from_dir(file=None,
     file_list = []
     if how == 'from file':
         names = list(open(file).readlines())
+        names = [_ for _ in names if _]
     elif how == 'from tree':
         t = read_tree(file)
         names = t.get_leaf_names()
-        print(f"In given tree, {len(names)} were presented ")
+        tqdm.write(f"In given tree, {len(names)} were presented ")
     else:
         return
     for name in names:
@@ -123,13 +126,13 @@ def get_files_from_dir(file=None,
         if len(f) == 1:
             file_path = process_path(f[0])
             file_list.append((name, file_path))
-        elif len(f) > 1 :
-            print(f"Warning! Duplicated files for id {name}. It will be passed")
+        elif len(f) > 1:
+            print(f"Warning! Duplicated files for id {name}. It will be passed. please check the genome or tree file carefully.")
             pass
         else:
-            pass
-    print(f"Finally, {len(file_list)} were retrieved ")
-    return file_list, [_[0] for _ in file_list]
+            continue
+    tqdm.write(f"Finally, {len(file_list)} were retrieved ")
+    return file_list
 
 
 def to_name2seq_num(genomes):
@@ -149,7 +152,7 @@ def to_name2seq_num(genomes):
 def get_link_info(indir, name2seq, suffix='aliout'):
     """
     The file which stodge link info is for blastn (format 6)
-    If the
+    If the format is not belong to the format 6, it might have some silent errors.
     :param indir:
     :param name2seq:
     :return: return two objects. first one is using the raw genome name. the latter is using translated features name.
@@ -218,7 +221,7 @@ def get_chrome_info(genome_files, name2seq, stodge_seq=False):
 def read_annotation_table(f, name2seq):
     """
     read from a table with annotation information
-    the table should like
+    the table should follow below format
     1. no header
     2. separator is tab(\t)
     3. should be
@@ -257,19 +260,14 @@ def read_annotation_table(f, name2seq):
     return conf_fea, data_fea
 
 
-# def deep_scan(current_node):
-#     # not aligned leafs
-#     if current_node.is_leaf():
-#         return [{"name": current_node.name}]
-#     else:
-#         return_v = []
-#         child = current_node.children
-#         for c in child:
-#             return_v.append({"children": deep_scan(c)})
-#         return return_v
-
-
 def deep_scan(current_node, root=None):
+    """
+    It implement a function which could generate a suitable tree hierarchical format to AliTV.
+
+    :param current_node: it should be the node/root which from etetools.
+    :param root: normally, it should not be used.
+    :return:
+    """
     # aligned leafs
     if root is None:
         root = current_node
@@ -293,6 +291,13 @@ def deep_scan(current_node, root=None):
 
 
 def nwk2json(treefile, odir, subset_names=[]):
+    """
+    With above deep_scan function, it could convert a newick plaintext file into a json format which is suitable for AliTV.
+    :param treefile: path/ete3.Tree object
+    :param odir: output directory instead of output file... it just want to fix the output file name.
+    :param subset_names: If you pass parts of leafs to it, it will help you to truncated.
+    :return:
+    """
     # following the alitv way...
     t = read_tree(treefile)
     if subset_names:
