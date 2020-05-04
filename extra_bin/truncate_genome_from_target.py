@@ -23,7 +23,7 @@ def get_information(infile):
     return genome2target_locus
 
 
-# read gff part
+# read gff part (redundant part)
 def read_gff(gff_file, id_spec):
     tmp_dir = join(os.environ.get('HOME'), '.tmp')
     if not exists(tmp_dir):
@@ -154,7 +154,7 @@ def get_all_CDS_from_gbk(gbk_file, tag='locus_tag'):
     return gene2pos, contig2order_fea
 
 
-# split here
+# start to split
 def split_gbk(genome_files, odir,
               target_gene_dict, num_p,
               suffix, force=False, fuzzy_match=False):
@@ -176,11 +176,9 @@ def split_gbk(genome_files, odir,
             records = read_gbk(genome_file)
             if genome_file.endswith('.gbk'):
                 genome2gene_info, contig2order_fea = get_all_CDS_from_gbk(genome_file)
-            # elif genome_file.endswith('.gff'):
-            #     genome2gene_info, _order_tuple = get_all_gene_pos(genome_file)
-            # close this function due to the long code
+
             else:
-                # TODO
+                # only use genbank. not implement others
                 raise Exception('')
         elif exists(ofile) and not force:
             tqdm.write("output file existed, it will bypass it unless you use force")
@@ -197,11 +195,11 @@ def split_gbk(genome_files, odir,
                             for right_CDS in g2info
                             if _target_gene in right_CDS]
         else:
+            # confirm all retrieved target_genes are placed in g2info.
             assert all([True if _target_gene in g2info else False
                         for _target_gene in target_genes])
 
         # get centre position of target genes, if there are multiple genes,
-        #
 
         contig2pos_remained = defaultdict(list)
         for gene in target_genes:
@@ -211,7 +209,7 @@ def split_gbk(genome_files, odir,
             contig2pos_remained[contig].append((int(pos1), int(pos2), gene))
         if num_p[1] == 'bp':
             expand_len = num_p[0]
-            # filter out some contig extend too long
+            # filter out some contig which extend too long, like expand over 2 times of expand_len
             contigs_list = []
             for _contig, pos_list in list(contig2pos_remained.items()):
                 min_pos = min(pos_list, key=lambda x: x[0])[0]
@@ -238,6 +236,7 @@ def split_gbk(genome_files, odir,
             if contigs_list:
                 with open(ofile, 'w') as f1:
                     SeqIO.write(contigs_list, f1, format='genbank')
+
         elif num_p[1] == 'CDS':
             expand_CDS = num_p[0]
             contigs_list = []
@@ -265,17 +264,23 @@ def split_gbk(genome_files, odir,
                 contigs_list.append(subset_contig)
             with open(ofile, 'w') as f1:
                 SeqIO.write(contigs_list, f1, format='genbank')
-
         else:
             raise Exception('unknown num_p parameters')
     # convert them into fasta in order to blast further
+    # it will create sub directory called fna under the output directory.
     for gbk in tqdm(glob(join(odir, '*.gbk'))):
         a = SeqIO.parse(gbk, format='genbank')
-        with open(gbk.replace('.gbk', '.fna'), 'w') as f1:
+        base_gbk = basename(gbk)
+        if not exists(join(dirname(odir), 'fna')):
+            os.makedirs(join(dirname(odir), 'fna'))
+        with open(join(dirname(odir),
+                       'fna',
+                       base_gbk.replace('.gbk', '.fna')), 'w') as f1:
             SeqIO.write(a, f1, format='fasta')
 
 
 def parse_nump(num_p):
+    num_p = num_p.lower() if type(num_p) == str else None
     if num_p.endswith('bp'):
         return (int(float(num_p.replace('bp', ''))),
                 'bp')
