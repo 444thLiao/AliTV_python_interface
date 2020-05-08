@@ -17,7 +17,7 @@ def cli(input_json, input_config, output_file):
     output_file = process_path(output_file)
     if not exists(dirname(output_file)):
         os.makedirs(dirname(output_file))
-    ori_json_obj = IO_json(file=input_json, way='r')
+    ori_json_obj = dict(IO_json(file=input_json, way='r'))
     new_json_obj = modify_json_from_config(ori_json_obj, input_config)
     IO_json(json_obj=new_json_obj,
             file=output_file,
@@ -25,4 +25,4 @@ def cli(input_json, input_config, output_file):
 
 
 if __name__ == '__main__':
-    pass
+    cli()

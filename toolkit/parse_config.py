@@ -13,11 +13,15 @@ def modify_json_from_config(json_obj_default, config_file):
         return new_json_obj
     return json_obj
 
-def read_config(config_file,default_json=None):
+
+def read_config(config_file, default_json=None):
     config = configparser.ConfigParser()
+    config.optionxform = str
+    # default config.optionxform would transform the input key into lowercase
+
     config.read(config_file)
     # if success
-    json_obj = parse_config2json(config,default_json=default_json)
+    json_obj = parse_config2json(config, default_json=default_json)
     return json_obj
 
 
@@ -31,10 +35,10 @@ def process_value(v):
     return v
 
 
-def parse_config2json(config,default_json=None):
+def parse_config2json(config, default_json=None):
     if default_json is None:
-        collect_dict = {_: {}
-                    for _ in config.sections()}
+        collect_dict = {s: {}
+                        for s in config.sections()}
     else:
         collect_dict = default_json
 

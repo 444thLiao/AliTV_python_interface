@@ -9,18 +9,24 @@ To achieve the goal, there have three major parts within this module. Not all pa
 
 
 ## Installation
+Using python3.7+
 
-To install the requirement of this project, you just simply run 
-`pip install -r requirement.txt`
+To install the requirement of this project, you just simply run `pip install -r requirement.txt`
 
-## Usage
 
-This script has some special functions which not in perl-interface.
+## Usage or testing
+
+This script has some special functions which not appear in perl-interface.
 It could accept the order of the genomes, the order will be used to stepwise align the sequence. And the order would used to taken as the order which finally print out on the AliTV.
 
-##
-`python`
+To generate truncated genbank files
+`python ~/software/AliTV_python_interface/extra_bin/format_anno_table.py -i ../gene_trees/name2genes.txt -indir ./split_gbk/ -o ./annotation.tab`
 
+To generate annotatble table
+
+To generate the final json
+
+To modify the output json (it could also directly pass to above script)
 
 ### * Alignment
 For now, it only support `blast`. The default parameters for blast operation are `-evalue 1e-3 -outfmt 6 `
@@ -63,11 +69,15 @@ It could help you to convert the requested genes into an annotation table. Or yo
 > 
 > `num_p`: This parameter controls the length of the truncated regions. Default is `50p`. It will truncate the region covering 100 CDS(left+right) in total started from requested genes. You could also use `bp` to extract the region like `15e3bp` (15000bp). But using `bp` would not generate a exact length of region due to the consideration to the completeness of CDS. 
 
+3. **change_parameters.py**
 
+> Required files/parameters: 
+> 
+> 
 
 ## Potential disasters
 
-1. To perform blast or other alignment, it need to deal with the file name. And if there are any **'_to_'** in the orignal file name. It might raise errors. Details could be seen in the **nearly line 79** of `toolkit/alignment.py`
+1. To perform blast or other alignment, it need to concatenate two names of genome derive from the filename and name the output file. Thus, if there are any **'_to_'** (used to concatenate)  in the orignal file name. It might raise errors. Details could be seen in the **near line 79** of `toolkit/alignment.py`
 2.
 
 

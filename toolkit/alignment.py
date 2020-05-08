@@ -92,7 +92,7 @@ def alignment_batch(genomes,
                                method=alignment_ways,
                                force=force,
                                parallel=parallel))
-        # if parallel is default_setting 0, it mean run one by one.
+        # if parallel is setting 0, it mean run one by one.
     if parallel != 0:
         parallel = len(cmds) if parallel == -1 else int(parallel)
         with mp.Pool(processes=parallel) as tp:

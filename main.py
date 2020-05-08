@@ -8,7 +8,7 @@ from os.path import join
 import click
 from tqdm import tqdm
 
-from default_setting import json_obj_default
+from setting import json_obj_default
 from toolkit import get_files_from_dir, alignment_batch, gname2seq_num, get_link_info, get_chrome_info, read_annotation_table, nwk2json, modify_json_from_config, IO_json
 
 
@@ -124,10 +124,11 @@ def main(genome_list=None,
 @click.option("-s", "suffix", default='fna')
 @click.option("-f", "force", is_flag=True, default=False)
 @click.option("-exact", "exact", is_flag=True, default=False)
-def cli(genome_list, tree_file, indir, odir, annotation_table, enable_stepwise, pairwise, force, alignment_ways, parallel, only_align, suffix, exact):
+def cli(genome_list, tree_file, indir, odir,
+        annotation_table, enable_stepwise, pairwise, force, alignment_ways,
+        parallel, only_align, suffix, exact):
     if pairwise:
         enable_stepwise = False
-
     main(genome_list=genome_list,
          tree_file=tree_file,
          indir=indir,
