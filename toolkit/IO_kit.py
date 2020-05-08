@@ -259,7 +259,7 @@ def read_annotation_table(f, name2seq):
             data_fea[gene].append(_dict)
     return conf_fea, data_fea
 
-
+# below is part to convert newick into json format required by AliTV
 def deep_scan(current_node, root=None):
     """
     It implement a function which could generate a suitable tree hierarchical format to AliTV.
@@ -295,7 +295,7 @@ def nwk2json(treefile, odir, subset_names=[]):
     With above deep_scan function, it could convert a newick plaintext file into a json format which is suitable for AliTV.
     :param treefile: path/ete3.Tree object
     :param odir: output directory instead of output file... it just want to fix the output file name.
-    :param subset_names: If you pass parts of leafs to it, it will help you to truncated.
+    :param subset_names: deIf you pass parts of leafs to it, it will help you to truncated.
     :return:
     """
     # following the alitv way...

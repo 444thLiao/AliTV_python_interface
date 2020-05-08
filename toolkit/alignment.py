@@ -1,3 +1,7 @@
+"""
+This script is for alignment (stepwise or pairwise)
+
+"""
 import itertools
 import multiprocessing as mp
 import os
@@ -21,10 +25,11 @@ def gbk2fna_path(f):
 
 
 def align_unit(f1, f2, ofile, method='blastn',
-               force=True, parallel=0):
+               force=True, parallel=0, extra_params=''):
     if method == 'blastn':
         if force or not exists(ofile):
-            cmd = f"blastn -query {f1} -subject {f2} -evalue 1e-3 -outfmt 6 -out {ofile}"
+            blastn_path = os.popen('which blastn').read().strip('\n')
+            cmd = f"{blastn_path} -query {f1} -subject {f2} -evalue 1e-3 -outfmt 6 -out {ofile} " + extra_params
             if parallel == 0:
                 os.system(cmd)
             else:
@@ -33,7 +38,7 @@ def align_unit(f1, f2, ofile, method='blastn',
     # elif method is None:
     #     pass
     # else:
-    #     #todo: fix with other kinds of tool
+    #     #todo: implement other tools
     #     pass
 
 
@@ -71,7 +76,7 @@ def alignment_batch(genomes,
         # not implement yet
         return
     iter_objs = tqdm(iter_objs) if parallel == 0 else iter_objs
-    tqdm.write(f"start running the {how} alignment based on designated order.")
+    tqdm.write(f"start running the '{how}' alignment " + "based on designated order." if how == 'stepwise' else ' .')
     cmds = []
     for file1, file2 in iter_objs:
         name1 = g2name[file1]
@@ -84,7 +89,7 @@ def alignment_batch(genomes,
                                method=alignment_ways,
                                force=force,
                                parallel=parallel))
-        # if parallel is default 0, it mean run one by one.
+        # if parallel is default_setting 0, it mean run one by one.
     if parallel != 0:
         parallel = len(cmds) if parallel == -1 else int(parallel)
         with mp.Pool(processes=parallel) as tp:

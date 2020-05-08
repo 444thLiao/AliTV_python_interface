@@ -14,8 +14,9 @@ def get_information(infile):
     # format should be like
     # genome name\t target locus ID \n
     # the target locus ID could be multiple but separate each one with comma(,)
-    # if you turn on the fuzzy match ( you could simple pass part of the name of locus ) But carefully...
-    # it only usefully for the data with exact number but different prefix of locus.
+    # if you turn on the fuzzy match ( you could simple pass part of the name of locus )
+    # But be careful for that ...
+    # it only useful for the data with exact number but different prefix of locus.
     rows = [row.split('\t') for row in open(infile).read().split('\n') if row]
     genome2target_locus = {genome: [locus for locus in mlocus.split(',')]
                            for genome, mlocus in rows
@@ -311,7 +312,7 @@ def main(infile, indir, odir, suffix, fuzzy_match, num_p, force):
 @click.option("-s", "suffix", default='gbk')
 @click.option("-r", "num_p",
               help='maximum number of locus you want to truncate. Normally it just a approximate number. '
-                   'You could use 50p to mention 50 protein/CDS or 15e3bp to mention 150000bp ',
+                   'You could use 50p to mention 50 protein/CDS or 15e3bp to mention 15000bp ',
               default='50p')
 @click.option("--fuzzy-match", "fuzzy_match", is_flag=True, default=False)
 @click.option("-f", "force", is_flag=True, default=False)

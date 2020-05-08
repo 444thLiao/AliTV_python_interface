@@ -55,22 +55,22 @@ def core(locus2gene, locus2genome, gbk2gbk_obj,
         f1.write("\n".join(rows))
 
 
-def find_f(genomes, indir):
+def find_f(genomes, indir, suffix='gbk'):
     genome2path = {}
     for genome in genomes:
-        files = glob(join(indir, f"{genome}*"))
+        files = glob(join(indir, f"{genome}.{suffix}"))
         if len(files) >= 2:
             print("detect multiple files... may get wrong")
         genome2path[genome] = get_all_CDS_from_gbk(files[0])
     return genome2path
 
 
-def main(infile, indir, ofile):
+def main(infile, indir, ofile, suffix='gbk'):
     locus2gene, locus2genome, gbk2gbk_obj = parsed_infile(infile)
     if not gbk2gbk_obj and indir is not None:
         tqdm.write(f"search in {indir}")
         genomes = set([g for l, g in locus2genome.items()])
-        gbk2gbk_obj = find_f(genomes, indir)
+        gbk2gbk_obj = find_f(genomes, indir, suffix=suffix)
     core(locus2gene, locus2genome, gbk2gbk_obj, ofile)
 
 
@@ -78,8 +78,10 @@ def main(infile, indir, ofile):
 @click.option("-i", "infile")
 @click.option("-indir", "indir", default=None)
 @click.option("-o", "ofile")
-def cli(infile, indir, ofile):
-    main(infile, indir, ofile)
+@click.option("-s", "suffix", default='gbk')
+def cli(infile, indir, ofile, suffix):
+    suffix = suffix.strip('.')
+    main(infile, indir, ofile, suffix)
 
 
 if __name__ == '__main__':

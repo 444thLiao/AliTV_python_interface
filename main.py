@@ -9,8 +9,16 @@ from os.path import join
 import click
 from tqdm import tqdm
 
-from default import json_obj_default
+from default_setting import json_obj_default
 from toolkit import get_files_from_dir, alignment_batch, to_name2seq_num, get_link_info, get_chrome_info, read_annotation_table, nwk2json
+
+def load_config(json_obj_default,config_file):
+    if config_file is None:
+        json_obj = json_obj_default
+    else:
+        pass
+
+    return json_obj
 
 
 def main(genome_list=None,
