@@ -3,26 +3,20 @@
 ####
 ####  written by tianhua liao on 2020/02/17
 #################################################################################
-import json
 from os.path import join
 
 import click
 from tqdm import tqdm
 
 from default_setting import json_obj_default
-from toolkit import get_files_from_dir, alignment_batch, to_name2seq_num, get_link_info, get_chrome_info, read_annotation_table, nwk2json
+from toolkit import get_files_from_dir, alignment_batch, gname2seq_num, get_link_info, get_chrome_info, read_annotation_table, nwk2json, modify_json_from_config, IO_json
 
-def load_config(json_obj_default,config_file):
-    if config_file is None:
-        json_obj = json_obj_default
-    else:
-        pass
 
-    return json_obj
 
 
 def main(genome_list=None,
          tree_file=None,
+         config_file=None,
          indir='./',
          odir='./',
          annotation_table=None,
@@ -77,14 +71,14 @@ def main(genome_list=None,
     if only_align:
         return
     # get information from blast results and raw gbk files
-    name2seq = to_name2seq_num(used_seq)
+    name2seq = gname2seq_num(used_seq)
     link_dict, linkfea_dict = get_link_info(ali_odir,
                                             name2seq)
 
     chr_dict = get_chrome_info(files,
                                name2seq, )
     # if not annotations need to add
-    json_obj = json_obj_default.copy()
+    json_obj = modify_json_from_config(json_obj_default, config_file).copy()
     json_obj['filters']['karyo']['chromosomes'] = {}
     for seq_name in name2seq.values():
         _dict = {seq_name: {"reverse": False,
@@ -111,8 +105,9 @@ def main(genome_list=None,
     json_obj['conf']['graphicalParameters']['canvasHeight'] = len(order_names) * 120
     json_obj['conf']['graphicalParameters']['tickDistance'] = 10000
 
-    with open(join(odir, 'aliTV_input.json'), 'w') as f1:
-        json.dump(json_obj, f1)
+    IO_json(file=join(odir, 'aliTV_input.json'),
+            way='w',
+            json_obj=json_obj)
 
 
 @click.command()

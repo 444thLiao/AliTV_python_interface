@@ -208,6 +208,7 @@ def split_gbk(genome_files, odir,
             pos2 = g2info[gene]['end']
             contig = g2info[gene]['contig_name']
             contig2pos_remained[contig].append((int(pos1), int(pos2), gene))
+        # below is the part to extract designated regions
         if num_p[1] == 'bp':
             expand_len = num_p[0]
             # filter out some contig which extend too long, like expand over 2 times of expand_len

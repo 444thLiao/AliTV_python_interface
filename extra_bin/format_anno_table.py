@@ -1,7 +1,7 @@
 """
 This script is mainly for quickly mapping locus id into detailed information
 
-Accept a file with gene locus and its annotations AND a directory which stodge genbank files which could be used to map.
+Accept a file with gene locus and its annotated name AND a directory which stodge genbank files which could be used to map.
 """
 
 import sys

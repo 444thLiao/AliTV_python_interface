@@ -1,0 +1,17 @@
+
+[conf]
+features.fallbackStyle.color = #787878
+graphicalParameters.canvasHeight = 900
+graphicalParameters.canvasWidth = 2000
+graphicalParameters.karyoDistance = 2000
+
+[filters]
+links.minLinkIdentity = 60
+links.maxLinkIdentity = 100
+links.maxLinkLength = 301000
+links.minLinkLength = 1000
+onlyShowAdjacentLinks = True
+showAllChromosomes = False
+showIntraGenomeLinks = False
+skipChromosomesWithoutLinks = False
+skipChromosomesWithoutVisibleLinks = True

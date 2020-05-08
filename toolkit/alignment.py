@@ -15,7 +15,9 @@ from toolkit import process_path, gbk2fna
 
 def run(cmd):
     check_call(cmd,
-               shell=True)
+               shell=True,
+               stdout=open('/dev/null','w'),
+               stderr=open('/dev/null','w'))
 
 
 def gbk2fna_path(f):
@@ -38,7 +40,7 @@ def align_unit(f1, f2, ofile, method='blastn',
     # elif method is None:
     #     pass
     # else:
-    #     #todo: implement other tools
+    #     #todo: implement other software
     #     pass
 
 
@@ -51,13 +53,14 @@ def alignment_batch(genomes,
                     how='stepwise'):
     new_genomes = []
     for g in genomes:
+        # if genbank file was passed, then it will convert it into fna first.
         if g.endswith('gbk') and not exists(gbk2fna_path(g)):
             g = gbk2fna(g,
                         gbk2fna_path(g))
         elif exists(gbk2fna_path(g)):
             g = gbk2fna_path(g)
         new_genomes.append(g)
-    genomes = new_genomes[::]
+    genomes = new_genomes[::] # use [::] to avoid potential overwritten errors
 
     g2name = dict(zip(genomes, names))
     odir = process_path(odir)

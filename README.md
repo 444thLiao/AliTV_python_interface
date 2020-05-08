@@ -23,25 +23,25 @@ It could accept the order of the genomes, the order will be used to stepwise ali
 
 
 ### * Alignment
-For now, it only support `blast`.
+For now, it only support `blast`. The default parameters for blast operation are `-evalue 1e-3 -outfmt 6 `
 
-Maybe later it will implement modules about some other alignment software.
-It will generate a temporary directory which stodge all alignment results on it. It would be not deleted unless you pass the `force` parameter.
+Maybe it will implement modules using other alignment software in the future.
+It will generate a temporary directory which deposits all alignment results on it. It would be not deleted for now.
 
 ### * The annotation table for annotation/color of the genes or some self-defined regions.
 
 The provide table should follow below formats
 
 > 1. no header
-> 2. separator is tab`(\t)`
+> 2. The separator is tab  `\t`
 > 3. each line should be look like genome name {TAB} contig id {TAB} start {TAB} end {TAB} annotation name (like some genes)
    e.g.
 
 
-## extra_bin for generate some required file to this library.
+## Extra binary executions (extra_bin) for generating suitable files to this library.
 1. **format_anno_table.py**
 
-It could help you to convert the requested genes into an annotation table. Or you should retrieve the corresponding start,end,contig information with corresponding gene ID from the truncated/complete genbank file.
+It could help you to convert the requested genes into an annotation table. Or you should retrieve the corresponding start,end,contig information with corresponding gene ID from the truncated/complete genbank file by yourself.
 > Required files/parameters:
 > 
 > `name2gene`: It could accept a file similar to `example_data/format_anno_table/name2genes.txt`. You could get the required genes in anyways including hmmer /self designation/Experimental evidence.
@@ -50,7 +50,7 @@ It could help you to convert the requested genes into an annotation table. Or yo
 > \
 > 
 
-1. truncate_genome_from_target.py
+2. **truncate_genome_from_target.py**
 
 > Required files/parameters:
 > 
