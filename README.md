@@ -22,9 +22,11 @@ This script has some special functions which not appear in [perl-interface](http
 
 To generate truncated genbank files
 
+> Be careful here, to save the space of this module. It doesn't stodge the raw genbank files. So here is using the truncated genbank files to truncate again.
+
 `python ./extra_bin/truncate_genome_from_target.py -i ./example_data/truncate_genome_from_target/gene.infile -indir ./example_data/split_gbk/ -odir ./example_data/truncate_genome_from_target/split_gbk2 -f -r 50p`
 
-To generate annotatble table
+To generate annotation table
 
 `python ./extra_bin/format_anno_table.py -i ./example_data/format_anno_tab/name2genes.txt -indir ./example_data/truncate_genome_from_target/split_gbk2/ -o ./example_data/format_anno_tab/example_out.tab`
 
@@ -34,7 +36,7 @@ To generate the final json
 
 To modify the output json (it could also directly pass to above script)
 
-`python ./extra_bin/change_parameters.py -i ./example_data/ali_odir -c ./setting/config_template.txt -o ./example_data/ali_odir/new_alitv.json`
+`python ./extra_bin/change_parameters.py -i ./example_data/ali_odir/aliTV_input.json  -c ./setting/config_template.txt -o ./example_data/ali_odir/new_alitv.json`
 
 
 ### * Alignment

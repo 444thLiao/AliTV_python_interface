@@ -74,8 +74,10 @@ def main(infile, indir, ofile, suffix='gbk'):
     locus2gene, locus2genome, gbk2gbk_obj = parsed_infile(infile,indir)
     if not gbk2gbk_obj and indir is not None:
         tqdm.write(f"search in {indir}")
+
         genomes = set([g for l, g in locus2genome.items()])
         gbk2gbk_obj = find_f(genomes, indir, suffix=suffix)
+    tqdm.write(f"it need to iterative search all genbank files, please wait...")
     core(locus2gene, locus2genome, gbk2gbk_obj, ofile)
 
 
