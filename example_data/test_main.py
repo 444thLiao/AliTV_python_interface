@@ -21,4 +21,4 @@ if __name__ == '__main__':
          suffix='fna',
          exact=False)
 
-# python3 ~/software/AliTV_python_interface/extra_bin/format_anno_table.py -i ../gene_trees/name2genes.txt -indir ./split_gbk/ -o ./annotation.tab
+# python3 ./main.py -tf ./example_data/sepcies.newick -indir ./example_data/split_gbk/fna_dir/ -c ./setting/config_template.txt -odir ./example_data/ali_odir -at ./example_data/annotation.tab -p 0

@@ -50,6 +50,8 @@ def read_tree(nwk_file):
     :param nwk_file:
     :return:
     """
+    if not exists(nwk_file):
+        raise IOError(f"input tree {nwk_file} doesn't exist")
     for f in [0, 1, 3, 5, 8]:
         # iterative
         try:
@@ -59,6 +61,7 @@ def read_tree(nwk_file):
             return nt
         except:
             pass
+
 
 
 def gbk2fna(gbk, fna):

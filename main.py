@@ -12,8 +12,6 @@ from setting import json_obj_default
 from toolkit import get_files_from_dir, alignment_batch, gname2seq_num, get_link_info, get_chrome_info, read_annotation_table, nwk2json, modify_json_from_config, IO_json
 
 
-
-
 def main(genome_list=None,
          tree_file=None,
          config_file=None,
@@ -72,6 +70,11 @@ def main(genome_list=None,
         return
     # get information from blast results and raw gbk files
     name2seq = gname2seq_num(used_seq)
+    # sto the name2seq
+    with open(join(ali_odir,'..', 'genome_name2seq_num.txt'), 'w') as f1:
+        f1.write('\n'.join([f"{k}\t{v}"
+                            for k, v in name2seq.items()]))
+
     link_dict, linkfea_dict = get_link_info(ali_odir,
                                             name2seq)
 
@@ -113,6 +116,7 @@ def main(genome_list=None,
 @click.command()
 @click.option("-gl", "genome_list", default=None)
 @click.option("-tf", "tree_file", default=None)
+@click.option("-c", "config_file", default=None)
 @click.option("-indir", "indir", default="./")
 @click.option("-odir", "odir", default="./")
 @click.option("-at", "annotation_table", default=None)
@@ -124,12 +128,13 @@ def main(genome_list=None,
 @click.option("-s", "suffix", default='fna')
 @click.option("-f", "force", is_flag=True, default=False)
 @click.option("-exact", "exact", is_flag=True, default=False)
-def cli(genome_list, tree_file, indir, odir,
+def cli(genome_list, tree_file, indir, odir, config_file,
         annotation_table, enable_stepwise, pairwise, force, alignment_ways,
         parallel, only_align, suffix, exact):
     if pairwise:
         enable_stepwise = False
     main(genome_list=genome_list,
+         config_file=config_file,
          tree_file=tree_file,
          indir=indir,
          odir=odir,

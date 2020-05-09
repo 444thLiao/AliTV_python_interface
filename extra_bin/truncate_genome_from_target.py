@@ -164,7 +164,7 @@ def split_gbk(genome_files, odir,
     for genome_file in tqdm(genome_files):
         genome_name = basename(genome_file).rpartition('.')[0]
         ofile = join(odir, f'{genome_name}.{suffix}')
-        g2info = genome2gene_info
+
 
         # get target genes
         target_genes = target_gene_dict.get(genome_name, None)
@@ -177,7 +177,7 @@ def split_gbk(genome_files, odir,
             records = read_gbk(genome_file)
             if genome_file.endswith('.gbk'):
                 genome2gene_info, contig2order_fea = get_all_CDS_from_gbk(genome_file)
-
+                g2info = genome2gene_info
             else:
                 # only use genbank. not implement others
                 raise Exception('')

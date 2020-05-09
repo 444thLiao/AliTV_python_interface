@@ -21,7 +21,7 @@ if __name__ == '__main__':
     indir = join(example_dir,"truncate_genome_from_target")
     truncate_genome_from_target(infile=join(indir,"gene.infile"),
                                 indir=join(example_dir,"split_gbk"),
-                                odir=join(indir,"example_out"),
+                                odir=join(indir,"split_gbk2"),
                                 suffix="gbk",
                                 fuzzy_match=False,
                                 num_p="50p",
@@ -30,3 +30,7 @@ if __name__ == '__main__':
     # use directory split_gbk which is actually genomes after truncating.
     # python3 ./extra_bin/truncate_genome_from_target.py -i ./example_data/truncate_genome_from_target/gene.infile -indir ./example_data/truncate_genome_from_target/split_gbk/ -odir ./example_data/truncate_genome_from_target/split_gbk -f -r 50p
 
+
+    print("testing extra_bin/change_parameters.py    ")
+    from extra_bin.change_parameters import main as change_parameters
+    

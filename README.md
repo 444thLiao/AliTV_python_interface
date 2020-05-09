@@ -1,32 +1,40 @@
 # Introduction to the api with python to AliTV
 
-This project implements functions to generate a validated json file for visualization using AliTV.
+This project implements functions to generate a validated json file for visualization of AliTV.
 
-To achieve the goal, there have three major parts within this module. Not all parts are compulsory. In general, you could following the pipelines to achieve following purposes: 
-> 1. truncate the genomes into suitable regions based on target genes or others.
-> 2. stepwise align above truncated genomic sequences instead of pairwise alignment which could save the computational costs. (the order to stepwise alignment could follow a tree or a list of genome IDs.)
-> 3. Input a file with information of genes need to be annotated. It could retrieve correct positional information from truncated genomic files and annotated them correctly into the visualization using AliTV.
+To achieve the goal, there have three major parts within this module. Not all parts are compulsory. In general, you could following the pipeline to generate a final json file: 
+> 1. Truncate the genomes into suitable regions based on target genes or others.
+> 2. Stepwise align above truncated genomic sequences instead of pairwise alignment which could save the computational costs. (the order to stepwise alignment could follow a tree or a list of genome IDs.)
+> 3. Input a file with information of genes needed to be annotated. It could help you to retrieve correct positional information from truncated genomic files and annotate them correctly into the final json file.
 
 
 ## Installation
 Using python3.7+
 
-To install the requirement of this project, you just simply run `pip install -r requirement.txt`
+To meet the requirement of this project, you just simply run `pip install -r requirement`
 
 
 ## Usage or testing
 
-This script has some special functions which not appear in perl-interface.
-It could accept the order of the genomes, the order will be used to stepwise align the sequence. And the order would used to taken as the order which finally print out on the AliTV.
+This script has some special functions which not appear in [perl-interface](https://github.com/AliTVTeam/AliTV-perl-interface).
+
+> It could accept a order list of the genomes, the order will be used to stepwise align the genomic sequence. And the order would be taken as the order which finally print out on the AliTV.
 
 To generate truncated genbank files
-`python ~/software/AliTV_python_interface/extra_bin/format_anno_table.py -i ../gene_trees/name2genes.txt -indir ./split_gbk/ -o ./annotation.tab`
+
+`python ./extra_bin/truncate_genome_from_target.py -i ./example_data/truncate_genome_from_target/gene.infile -indir ./example_data/split_gbk/ -odir ./example_data/truncate_genome_from_target/split_gbk2 -f -r 50p`
 
 To generate annotatble table
 
+`python ./extra_bin/format_anno_table.py -i ./example_data/format_anno_tab/name2genes.txt -indir ./example_data/truncate_genome_from_target/split_gbk2/ -o ./example_data/format_anno_tab/example_out.tab`
+
 To generate the final json
 
+`python ./main.py -tf ./example_data/species.newick -indir ./example_data/truncate_genome_from_target/fna -c ./setting/config_template.txt -odir ./example_data/ali_odir -at ./example_data/format_anno_tab/example_out.tab -p 0`
+
 To modify the output json (it could also directly pass to above script)
+
+
 
 ### * Alignment
 For now, it only support `blast`. The default parameters for blast operation are `-evalue 1e-3 -outfmt 6 `

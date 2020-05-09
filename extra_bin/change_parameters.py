@@ -8,12 +8,7 @@ sys.path.insert(0, dirname(dirname(__file__)))
 from toolkit.parse_config import modify_json_from_config
 from toolkit import IO_json, process_path
 
-
-@click.command()
-@click.option("-i", "input_json", help="input json file")
-@click.option("-c", "input_config", help="input configuration")
-@click.option("-o", "output_file", help="output json file")
-def cli(input_json, input_config, output_file):
+def main(input_json, input_config, output_file):
     output_file = process_path(output_file)
     if not exists(dirname(output_file)):
         os.makedirs(dirname(output_file))
@@ -22,6 +17,13 @@ def cli(input_json, input_config, output_file):
     IO_json(json_obj=new_json_obj,
             file=output_file,
             way='w')
+
+@click.command()
+@click.option("-i", "input_json", help="input json file")
+@click.option("-c", "input_config", help="input configuration")
+@click.option("-o", "output_file", help="output json file")
+def cli(input_json, input_config, output_file):
+    main(input_json, input_config, output_file)
 
 
 if __name__ == '__main__':

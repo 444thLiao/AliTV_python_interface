@@ -15,7 +15,7 @@ sys.path.insert(0, dirname(dirname(__file__)))
 from extra_bin.truncate_genome_from_target import get_all_CDS_from_gbk
 
 
-def parsed_infile(infile):
+def parsed_infile(infile,indir):
     locus2gene = {}
     locus2genome = {}
     gbk2gbk_obj = {}
@@ -24,12 +24,17 @@ def parsed_infile(infile):
         row = row.strip('\n')
         objs = row.split('\t')
         if len(objs) == 2:
-            locus, gene = objs
+            gene, locus  = objs
             locus2gene[locus] = gene
+
         elif len(objs) == 3:
-            locus, gene, gbk_file = objs
+            gene, locus , gbk_file = objs
 
             locus2gene[locus] = gene
+            if not exists(gbk_file):
+                gbk_file = join(indir,gbk_file)
+            if not exists(gbk_file):
+                tqdm.write(f"wrong input gbk name {gbk_file}")
             gbk_name = basename(gbk_file).rpartition('.')[0]
             locus2genome[locus] = gbk_name
             gbk2gbk_obj[gbk_name] = get_all_CDS_from_gbk(gbk_file)[0]
@@ -42,7 +47,7 @@ def core(locus2gene, locus2genome, gbk2gbk_obj,
     rows = []
     for locus, gene in locus2gene.items():
         genome = locus2genome[locus]
-        gbk_obj = gbk2gbk_obj[genome].get(locus)
+        gbk_obj = gbk2gbk_obj.get(genome,{}).get(locus)
         if gbk_obj is None:
             continue
         contig_name = gbk_obj['contig_name']
@@ -66,7 +71,7 @@ def find_f(genomes, indir, suffix='gbk'):
 
 
 def main(infile, indir, ofile, suffix='gbk'):
-    locus2gene, locus2genome, gbk2gbk_obj = parsed_infile(infile)
+    locus2gene, locus2genome, gbk2gbk_obj = parsed_infile(infile,indir)
     if not gbk2gbk_obj and indir is not None:
         tqdm.write(f"search in {indir}")
         genomes = set([g for l, g in locus2genome.items()])
