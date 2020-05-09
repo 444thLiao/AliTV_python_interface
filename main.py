@@ -126,7 +126,7 @@ def main(genome_list=None,
 @click.option("-only_align", "only_align", is_flag=True, default=False,
               help="only perform the alignment instead of generation of json file. It would stop after the alignment completed. ")
 @click.option("-s", "suffix", default='fna', help="The suffix of nucleotide sequence files under `indir` ")
-@click.option("-f", "force", is_flag=True, default=False, default="Re-run or not if the alignment results have been existed.")
+@click.option("-f", "force", is_flag=True, default=False, help="Re-run or not if the alignment results have been existed.")
 def cli(genome_list, tree_file, indir, odir, config_file,
         annotation_table, enable_stepwise, force, alignment_ways,
         parallel, only_align, suffix):

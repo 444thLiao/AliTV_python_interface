@@ -95,6 +95,11 @@ It could help you to convert the requested genes into an annotation table. Or yo
 ## Potential disasters
 
 1. To perform blast or other alignment, it need to concatenate two names of genome derive from the filename and name the output file. Thus, if there are any **'_to_'** (used to concatenate)  in the orignal file name. It might raise errors. Details could be seen in the **near line 79** of `toolkit/alignment.py`
-2.
 
+
+
+## FAQ
+1. If I want to assign different color/shape to the annotated genes? what should I do ?
+   > I think using `change_parameters.py` is the most simplest way. You could review the [doc](https://alitvteam.github.io/AliTV/d3/doc/AliTV.html) of AliTV. You would find out that, if you have assigned a annotated gene `hao`, the format of the gene is defined under `conf.features.supportedFeatures.hao`. There are `color`, `form`,`height` or `visiable` for modifing.
+2. 
 
