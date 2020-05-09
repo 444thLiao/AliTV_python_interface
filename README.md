@@ -30,10 +30,11 @@ To generate annotatble table
 
 To generate the final json
 
-`python ./main.py -tf ./example_data/species.newick -indir ./example_data/truncate_genome_from_target/fna -c ./setting/config_template.txt -odir ./example_data/ali_odir -at ./example_data/format_anno_tab/example_out.tab -p 0`
+`python ./main.py -tf ./example_data/species.newick -indir ./example_data/truncate_genome_from_target/split_gbk2/fna -c ./setting/config_template.txt -odir ./example_data/ali_odir -at ./example_data/format_anno_tab/example_out.tab -p 0`
 
 To modify the output json (it could also directly pass to above script)
 
+`python ./extra_bin/change_parameters.py -i ./example_data/ali_odir -c ./setting/config_template.txt -o ./example_data/ali_odir/new_alitv.json`
 
 
 ### * Alignment

@@ -33,4 +33,3 @@ if __name__ == '__main__':
 
     print("testing extra_bin/change_parameters.py    ")
     from extra_bin.change_parameters import main as change_parameters
-    

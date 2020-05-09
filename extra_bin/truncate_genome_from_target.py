@@ -273,9 +273,9 @@ def split_gbk(genome_files, odir,
     for gbk in tqdm(glob(join(odir, '*.gbk'))):
         a = SeqIO.parse(gbk, format='genbank')
         base_gbk = basename(gbk)
-        if not exists(join(dirname(odir), 'fna')):
-            os.makedirs(join(dirname(odir), 'fna'))
-        with open(join(dirname(odir),
+        if not exists(join(odir, 'fna')):
+            os.makedirs(join(odir, 'fna'))
+        with open(join(odir,
                        'fna',
                        base_gbk.replace('.gbk', '.fna')), 'w') as f1:
             SeqIO.write(a, f1, format='fasta')
