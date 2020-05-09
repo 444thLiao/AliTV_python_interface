@@ -24,8 +24,6 @@ def main(genome_list=None,
          parallel=0,
          only_align=False,
          suffix='fna',
-         pairwise=False,
-         exact=False,
          ):
     # prepare the IO
     ali_odir = join(odir, 'tmp_ali_out')
@@ -56,7 +54,7 @@ def main(genome_list=None,
     order_names = [_[0] for _ in order_files]
     files = [_[1] for _ in order_files]
     tqdm.write('running alignment')
-    ali_how = 'pairwise' if pairwise else 'stepwise'
+    ali_how = 'pairwise' if not enable_stepwise else 'stepwise'
     used_seq = alignment_batch(genomes=files,
                                names=order_names,
                                odir=ali_odir,
@@ -71,7 +69,7 @@ def main(genome_list=None,
     # get information from blast results and raw gbk files
     name2seq = gname2seq_num(used_seq)
     # sto the name2seq
-    with open(join(ali_odir,'..', 'genome_name2seq_num.txt'), 'w') as f1:
+    with open(join(ali_odir, '..', 'genome_name2seq_num.txt'), 'w') as f1:
         f1.write('\n'.join([f"{k}\t{v}"
                             for k, v in name2seq.items()]))
 
@@ -114,25 +112,24 @@ def main(genome_list=None,
 
 
 @click.command()
-@click.option("-gl", "genome_list", default=None)
-@click.option("-tf", "tree_file", default=None)
-@click.option("-c", "config_file", default=None)
-@click.option("-indir", "indir", default="./")
-@click.option("-odir", "odir", default="./")
-@click.option("-at", "annotation_table", default=None)
-@click.option("-no-stepwise", "enable_stepwise", is_flag=True, default=True)
-@click.option("-pairwise", "pairwise", is_flag=True, default=False)
-@click.option("-align", "alignment_ways", default='blastn')
-@click.option("-p", "parallel", default=0)
-@click.option("-only_align", "only_align", is_flag=True, default=False)
-@click.option("-s", "suffix", default='fna')
-@click.option("-f", "force", is_flag=True, default=False)
-@click.option("-exact", "exact", is_flag=True, default=False)
+@click.option("-gl", "genome_list", default=None, help='A file comprises of order genome names, without suffix. Default None')
+@click.option("-tf", "tree_file", default=None, help="Newick formatted tree file. The order of the leaves will be taken as the order of finall visualization")
+@click.option("-c", "config_file", default=None,
+              help="configuration file. Default None. You could pass some preset parameters with it. Or you could change parameters after the generation first json using `extra_bin/change_parameters.py `")
+@click.option("-indir", "indir", default="./", help="input directory which contain fasta files for alignment")
+@click.option("-odir", "odir", default="./", help="output directory which contains temporary alignment files and final json.")
+@click.option("-at", "annotation_table", default=None,
+              help="annotation file which comprises of information of annotated genes. The required format could refer to the output of `./extra_bin/format_anno_table.py` ")
+@click.option("-no-stepwise", "enable_stepwise", is_flag=True, default=True, help="pairwise alignment")
+@click.option("-align", "alignment_ways", default='blastn', help="alignment ways. Default is blastn for nucleotide sequences.")
+@click.option("-p", "parallel", default=0, help="the number of tasks you want to parallel run. Default is 0. It means no parallel running. ")
+@click.option("-only_align", "only_align", is_flag=True, default=False,
+              help="only perform the alignment instead of generation of json file. It would stop after the alignment completed. ")
+@click.option("-s", "suffix", default='fna', help="The suffix of nucleotide sequence files under `indir` ")
+@click.option("-f", "force", is_flag=True, default=False, default="Re-run or not if the alignment results have been existed.")
 def cli(genome_list, tree_file, indir, odir, config_file,
-        annotation_table, enable_stepwise, pairwise, force, alignment_ways,
-        parallel, only_align, suffix, exact):
-    if pairwise:
-        enable_stepwise = False
+        annotation_table, enable_stepwise, force, alignment_ways,
+        parallel, only_align, suffix):
     main(genome_list=genome_list,
          config_file=config_file,
          tree_file=tree_file,
@@ -140,13 +137,11 @@ def cli(genome_list, tree_file, indir, odir, config_file,
          odir=odir,
          annotation_table=annotation_table,
          enable_stepwise=enable_stepwise,
-         pairwise=pairwise,
          alignment_ways=alignment_ways,
          parallel=parallel,
          only_align=only_align,
          force=force,
-         suffix=suffix,
-         exact=exact)
+         suffix=suffix)
 
 
 if __name__ == '__main__':

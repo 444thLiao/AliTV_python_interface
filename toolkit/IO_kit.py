@@ -240,24 +240,31 @@ def get_chrome_info(genome_files, name2seq, stodge_seq=False):
     return _dict
 
 
-def read_annotation_table(f, name2seq):
+def read_annotation_table(annotation_table, name2seq):
     """
     read from a table with annotation information
     the table should follow below format
     1. no header
     2. separator is tab(\t)
     3. should be
-       genome name {\t} contig id {\t} start {\t} end {\t} annotation name (like some genes)
-    :param f:
+       genome name {\t} contig id {\t} start {\t} end {\t} annotation name (like some genes) {\t} color (could be empty)
+    :param annotation_table:
     :param name2seq:
     :return:
     """
     conf_fea = defaultdict(dict)
     data_fea = {}
-    df = pd.read_csv(f, sep='\t', header=None)
+    df = pd.read_csv(annotation_table, sep='\t', header=None)
     gb = df.groupby(4)
     for idx, gene in enumerate(list(gb.groups.keys())):
-        conf_fea[gene]['color'] = default_colors[idx]
+        if 5 in df.columns: # the sixth line should be the color
+            sub_df = df.loc[gb.groups[gene], :]
+            if str(sub_df.iloc[0,-1]).startswith('#'):
+                conf_fea[gene]['color'] = str(sub_df.iloc[0,-1])
+            else:
+                conf_fea[gene]['color'] = default_colors[idx]
+        else:
+            conf_fea[gene]['color'] = default_colors[idx]
         conf_fea[gene]['form'] = "rect"
         conf_fea[gene]['height'] = "30"
         conf_fea[gene]['visible'] = True

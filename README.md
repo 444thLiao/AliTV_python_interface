@@ -22,7 +22,7 @@ This script has some special functions which not appear in [perl-interface](http
 
 To generate truncated genbank files
 
-> Be careful here, to save the space of this module. It doesn't stodge the raw genbank files. So here is using the truncated genbank files to truncate again.
+> Be careful here, to save the space of this module, below command accepts truncated genomic sequences instead of raw/complete genomic sequences. The generated `gbk2` would be identical to the input sequences if the parameters doesn't change.
 
 `python ./extra_bin/truncate_genome_from_target.py -i ./example_data/truncate_genome_from_target/gene.infile -indir ./example_data/split_gbk/ -odir ./example_data/truncate_genome_from_target/split_gbk2 -f -r 50p`
 
@@ -84,7 +84,11 @@ It could help you to convert the requested genes into an annotation table. Or yo
 
 > Required files/parameters: 
 > 
+> `input json file`: Generated json file from `main.py`. 
 > 
+> `input config`: configuration which contains the parameters you want to change. The hierarchical relationship should be separate by dot (.). The example configuration file is deposited at `./example_data/config_template.txt`. If you pass a wrong parameter, it could not detect it. You should review the [document](https://alitvteam.github.io/AliTV/d3/doc/AliTV.html) of AliTV carefully.
+> 
+> `output json`: modified json file.
 
 ## Potential disasters
 

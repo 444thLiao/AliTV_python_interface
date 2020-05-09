@@ -1,0 +1,6 @@
+hzo	#CA75AC
+hdh	#1ca71c
+hzh	#2e91e5
+hzsA	#FA1805
+hzsB	#BC5E03
+hzsC	#D66E68
