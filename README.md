@@ -28,7 +28,7 @@ To generate truncated genbank files
 
 To generate annotation table
 
-`python ./extra_bin/format_anno_table.py -i ./example_data/format_anno_tab/name2genes.txt -indir ./example_data/truncate_genome_from_target/split_gbk2/ -o ./example_data/format_anno_tab/example_out.tab`
+`python ./extra_bin/format_anno_table.py -i ./example_data/format_anno_tab/name2genes.txt -c ./example_data/format_anno_tab/example_color.txt -indir ./example_data/truncate_genome_from_target/split_gbk2/ -o ./example_data/format_anno_tab/example_out.tab`
 
 To generate the final json
 
@@ -64,8 +64,10 @@ It could help you to convert the requested genes into an annotation table. Or yo
 > `name2gene`: It could accept a file similar to `example_data/format_anno_table/name2genes.txt`. You could get the required genes in anyways including hmmer /self designation/Experimental evidence.
 >
 > `input directory`: The directory comprises of all the genbank files which should be identical to the fasta file you passed to blast/alignment. Genbank files should end with suffix `gbk`. If the suffix of your files are `gbff` or others, you could pass corresponding suffix to the parameters `-s`. 
-> \
 > 
+> `color_file`: You could pass a simple file like `./example_data/format_anno_table/example_color.txt`. The file could set the color to the target gene. The file should separator with TAB.
+> 
+> `output file`: generated annotation which is suitable to the `main.py`
 
 2. **truncate_genome_from_target.py**
 
