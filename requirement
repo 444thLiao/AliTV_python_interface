@@ -1,3 +1,6 @@
 gffutils
 tqdm
 click
+biopython
+pandas
+ete3
