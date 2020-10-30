@@ -45,14 +45,14 @@ For now, it only support `blast`. The default parameters for blast operation are
 Maybe it will implement modules using other alignment software in the future.
 It will generate a temporary directory which deposits all alignment results on it. It would be not deleted for now.
 
-### * The annotation table for annotation/color of the genes or some self-defined regions.
+### * The annotation table for annotating genes or some self-defined regions.
 
 The provide table should follow below formats
 
 > 1. no header
 > 2. The separator is tab  `\t`
 > 3. each line should be look like genome name {TAB} contig id {TAB} start {TAB} end {TAB} annotation name (like some genes)
-   e.g.
+> 4. the sixth line could be set as color or left empty.
 
 
 ## Extra binary executions (extra_bin) for generating suitable files to this library.

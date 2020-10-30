@@ -77,22 +77,30 @@ def gbk2fna(gbk, fna):
 def gbk2faa(gbk, faa):
     faa = process_path(faa)
     if not exists(dirname(faa)):
+        # create the directory which stodge faa file if it doesn't exists
         os.makedirs(dirname(faa))
 
     faa_handle = open(faa, 'w')
     for seq_record in SeqIO.parse(gbk, format="genbank"):
+        # iterate record (each contig) within genbank file
         for seq_feature in seq_record.features:
+            # iterate features (CDS, gene, 16S etc. )
             if seq_feature.type == "CDS":
+                # if it is CDS
                 if "translation" not in seq_feature.qualifiers:
+                    # if not translation (protein sequence) here, just pass it
                     continue
                 if len(seq_feature.qualifiers['translation']) != 1:
+                    # if multiple translation here, also pass it
                     continue
+                # write out the sequence one by one
+                # the header is following format
+                # > locus_tag from contig_name
                 faa_handle.write(">%s from %s\n%s\n" % (
                     seq_feature.qualifiers['locus_tag'][0],
                     seq_record.name,
                     seq_feature.qualifiers['translation'][0]))
     faa_handle.close()
-
 
 def get_protein_info_from_gbk(gbk, protein):
     # it should pass single protein ID to the genbank file.
@@ -285,6 +293,9 @@ def read_annotation_table(annotation_table, name2seq):
                              end=row[3],
                              name=gene,
                              karyo=name2seq[format_name])
+            else:
+                print(f"not found genome {row[0]} contig {row[1]} at aligned seqs ")
+                continue
             data_fea[gene].append(_dict)
     return conf_fea, data_fea
 

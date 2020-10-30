@@ -53,7 +53,8 @@ def parsed_infile(infile, indir):
             gbk_name = basename(gbk_file).rpartition('.')[0]
             locus2genome[locus] = gbk_name
             gbk2gbk_obj[gbk_name] = get_all_CDS_from_gbk(gbk_file)[0]
-
+    if not locus2genome :
+        exit("locus2genome is None, you need to indicate the name of gbk file in the third columns within input file.")
     return locus2gene, locus2genome, gbk2gbk_obj
 
 
