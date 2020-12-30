@@ -155,6 +155,42 @@ def get_all_CDS_from_gbk(gbk_file, tag='locus_tag'):
     return gene2pos, contig2order_fea
 
 
+
+def deal_with_too_long_contig(pos_list,expand_len,contig_obj):
+    pos_list = sorted(pos_list)
+    max_len = expand_len * 0.1
+    
+    # get the core part
+    core_parts = []
+    current_part = []
+    for left_,right_,locus in pos_list:
+        if not current_part:
+            current_part.append((left_,right_))
+        else:
+            _min = min([v for _ in current_part for v in _])
+            _max = max([v for _ in current_part for v in _])
+            if right_ - _min >= max_len:
+                # calculate the expanisn length of current set compared to 0.1 * required total expand_length . 
+                core_parts.append(current_part+[_max-_min])
+                current_part = [(left_,right_)]
+            else:
+                current_part.append((left_,right_))
+                
+    used_length = sum([_[2] for _ in core_parts])
+    avg_expaned = (expand_len-used_length)/len(core_parts)
+    
+    contig_list = []
+    count_=0
+    for (left_,right_,length) in core_parts:
+        new_l = int(left_-avg_expaned/2) 
+        new_l = 0 if new_l <0 else new_l
+        new_r = int(right_+avg_expaned/2) 
+        sub_contig = contig_obj[new_l:new_r]
+        sub_contig.id = sub_contig.id+f'_tr{count_}'
+        count_+=1
+        contig_list.append(sub_contig)
+    return contig_list
+    
 # start to split
 def split_gbk(genome_files, odir,
               target_gene_dict, num_p,
@@ -216,29 +252,34 @@ def split_gbk(genome_files, odir,
             for _contig, pos_list in list(contig2pos_remained.items()):
                 min_pos = min(pos_list, key=lambda x: x[0])[0]
                 max_pos = max(pos_list, key=lambda x: x[1])[1]
-
-                if (max_pos - min_pos) >= 2 * expand_len:
-                    contig2pos_remained.pop(_contig)
-                    continue
-
-                start = int(min_pos - expand_len)
-                start = 0 if start < 0 else start
-                end = int(max_pos + expand_len)
-
+                
                 contig_obj = [record
-                              for record in records
-                              if record.id == _contig]
+                        for record in records
+                        if record.id == _contig]
                 if contig_obj:
                     contig_obj = contig_obj[0]
                 else:
-                    continue
-                subset_contig = contig_obj[start:end]
-                contigs_list.append(subset_contig)
+                    # if not , normally wouldn't happean
+                    continue      
+                        
+                if (max_pos - min_pos) >= 2 * expand_len:
+                    # contig2pos_remained.pop(_contig)
+                    # continue
+                    tqdm.write(f"too long contig ({_contig}: {max_pos - min_pos}bp), cut it ")
+                    contigs_list.extend(deal_with_too_long_contig(pos_list,expand_len,contig_obj))
+                else:
+                    start = int(min_pos - expand_len)
+                    start = 0 if start < 0 else start
+                    end = int(max_pos + expand_len)
+
+                    subset_contig = contig_obj[start:end]
+                    contigs_list.append(subset_contig)
 
             if contigs_list:
                 with open(ofile, 'w') as f1:
                     SeqIO.write(contigs_list, f1, format='genbank')
-
+            else:
+                tqdm.write("No contigs matching your requirements.")
         elif num_p[1] == 'CDS':
             expand_CDS = num_p[0]
             contigs_list = []
@@ -252,6 +293,14 @@ def split_gbk(genome_files, odir,
                 left_bound_idx = 0 if left_most_idx - expand_CDS <= 0 else left_most_idx - expand_CDS
                 right_bound_idx = len(order_fea) - 1 if right_most_idx + expand_CDS >= len(order_fea) else right_most_idx + expand_CDS
 
+                # might be too long
+                # todo: add a func like `deal_with_too_long_contig`
+                
+                if (right_bound_idx - left_bound_idx) >= 2 * expand_CDS:
+                    contig2pos_remained.pop(contig)
+                    tqdm.write("the truncated region is too long, Here, it will be discard instead of output too long region. You could try using bp version which has implemented a method cutting a single contig apart for meeting the length requirement. ")
+                    continue
+                    
                 pos_end = g2info[order_fea[right_bound_idx]]['end']
                 pos_start = g2info[order_fea[left_bound_idx]]['start']
 
