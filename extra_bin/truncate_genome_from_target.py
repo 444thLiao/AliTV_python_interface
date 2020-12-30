@@ -171,17 +171,19 @@ def deal_with_too_long_contig(pos_list,expand_len,contig_obj):
             _max = max([v for _ in current_part for v in _])
             if right_ - _min >= max_len:
                 # calculate the expanisn length of current set compared to 0.1 * required total expand_length . 
-                core_parts.append(current_part+[_max-_min])
+                core_parts.append((_min,_max))
                 current_part = [(left_,right_)]
             else:
                 current_part.append((left_,right_))
                 
-    used_length = sum([_[2] for _ in core_parts])
+    used_length = 0
+    for current_part in core_parts:
+        used_length +=current_part[1]-current_part[0]
     avg_expaned = (expand_len-used_length)/len(core_parts)
     
     contig_list = []
     count_=0
-    for (left_,right_,length) in core_parts:
+    for (left_,right_) in core_parts:
         new_l = int(left_-avg_expaned/2) 
         new_l = 0 if new_l <0 else new_l
         new_r = int(right_+avg_expaned/2) 
